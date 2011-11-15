@@ -1,0 +1,60 @@
+\documentclass [11pt, a4paper]{report}
+\pagestyle{headings}
+\usepackage{nomencl}
+\usepackage{graphicx}
+\usepackage{url}
+\usepackage[pdftex]{hyperref}
+\begin{document}
+
+\include{frontmatter}
+\noindent
+\emph{Optional: Put your favorite quote here}
+\begin{flushright}
+Optional: Author of quote
+\end{flushright}
+% *************** Table of contents ***************
+\pagenumbering{roman}
+\pagestyle{headings}
+\tableofcontents
+
+% *************** End of front matter ***************
+
+\pagestyle{headings}
+
+\pagenumbering{arabic}
+
+\chapter*{Abstract}
+Put your abtract here.
+
+\chapter*{Zusammenfassung}
+Hier die deutsche Zusammenfassung einfügen
+
+\chapter*{Acknowledgements}
+Your acknowledgements to...
+
+
+
+% include chapters here
+
+
+%\chapter{Outlook and Discussion}
+%TODO
+\chapter{Conclusio}
+Put your conclusions and outlooks here
+
+
+\chapter{Terms and abbreviations}
+\include{glossary}
+
+
+% \appendix
+% include appendexes here
+
+\listoftables
+\listoffigures
+
+\bibliographystyle{alpha}
+\bibliography{biblio}
+\end{document}
+
+
