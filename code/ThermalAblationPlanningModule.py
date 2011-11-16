@@ -6,15 +6,16 @@ from __main__ import vtk, qt, ctk, slicer
 
 class ThermalAblationPlanningModule:
   def __init__(self, parent):
-    parent.title = "Thermal Ablation Planning Module"
-    parent.category = "Thermal Ablation Planning"
-    parent.contributor = ""
+    parent.title = "Thermal Ablation Planning"
+    parent.category = "Thermal Ablation"
+    parent.contributor = "Haichao Miao <hmiao87@gmail.com>"
     parent.helpText = """
-    Example of scripted loadable extension.
+    Slicer 4 module for planning a ablation procedure.
+    For more information, read the README file.
     """
     parent.acknowledgementText = """
-    This file was originally developed by Jean-Christophe Fillion-Robin, Kitware Inc.
-and was partially funded by NIH grant 3P41RR013218-12S1.
+    This module was created by Haichao Miao as a part of his bachelor thesis under the guidance of Dr. Wolfgang Schramm
+    at the Vienna University of Technology.
     """
     self.parent = parent
 
@@ -38,26 +39,38 @@ class ThermalAblationPlanningModuleWidget:
   def setup(self):
     # Instantiate and connect widgets ...
     
-    # Collapsible button
-    dummyCollapsibleButton = ctk.ctkCollapsibleButton()
-    dummyCollapsibleButton.text = "A collapsible button"
-    self.layout.addWidget(dummyCollapsibleButton)
+    # Probe Placement Planning Collapsible button
+    probePlacementPlanningCollapsibleButton = ctk.ctkCollapsibleButton()
+    probePlacementPlanningCollapsibleButton.text = "Probe Placement Planning"
+    self.layout.addWidget(probePlacementPlanningCollapsibleButton)
     
-    # Layout within the dummy collapsible button
-    dummyFormLayout = qt.QFormLayout(dummyCollapsibleButton)
+
+    formLayout = qt.QFormLayout(probePlacementPlanningCollapsibleButton)
     
-    # HelloWorld button
-    helloWorldButton = qt.QPushButton("Hello world")
-    helloWorldButton.toolTip = "Print 'Hello world' in standard ouput."
-    dummyFormLayout.addWidget(helloWorldButton)
-    helloWorldButton.connect('clicked(bool)', self.onHelloWorldButtonClicked)
+
+    # Apply button
+    applyButton = qt.QPushButton("Apply")
+    applyButton.toolTip = "Execute the placement of the probe"
+    formLayout.addWidget(applyButton)
+    applyButton.connect('clicked(bool)', self.onApplyButtonClicked)
     
-    # Add vertical spacer
-    self.layout.addStretch(1)
+    
     
     # Set local var as instance attribute
-    self.helloWorldButton = helloWorldButton
+    self.applyButton = applyButton
     
-  def onHelloWorldButtonClicked(self):
-    print "Hello World !"
+    # Default Button
+    defaultButton = qt.QPushButton("Default")
+    defaultButton.toolTip = "Reset the parameters to default"
+    formLayout.addWidget(defaultButton)
+    defaultButton.connect('clicked(bool)', self.onDefaultButtonClicked)
+    
+    self.defaultButton = defaultButton
+    
+    
+  def onApplyButtonClicked(self):
+    print "Apply Button clicked!"
+    
+  def onDefaultButtonClicked(self):
+    print "Default Button clicked!"
 
