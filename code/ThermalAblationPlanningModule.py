@@ -6,8 +6,8 @@ from __main__ import vtk, qt, ctk, slicer
 
 class ThermalAblationPlanningModule:
   def __init__(self, parent):
-    parent.title = "Scripted Loadable Extension Template"
-    parent.category = "Examples"
+    parent.title = "Thermal Ablation Planning Module"
+    parent.category = "Thermal Ablation Planning"
     parent.contributor = ""
     parent.helpText = """
     Example of scripted loadable extension.
