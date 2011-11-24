@@ -1,2 +1,0 @@
-\contentsline {chapter}{\numberline {1}Conclusio}{5}{chapter.1}
-\contentsline {chapter}{\numberline {2}Terms and abbreviations}{6}{chapter.2}

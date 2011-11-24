@@ -8,7 +8,7 @@ class ThermalAblationPlanningModule:
 
   def __init__(self, parent):
     parent.title = "Thermal Ablation Planning"
-    parent.category = "Thermal Ablation"
+    parent.category = "Ablation"
     parent.contributor = "Haichao Miao <hmiao87@gmail.com>"
     parent.helpText = """
     Slicer 4 module for planning a ablation procedure.
@@ -37,7 +37,10 @@ class ThermalAblationPlanningModuleWidget:
     self.layout = self.parent.layout()
     if not parent:
       self.setup()
+      self.fiducialsNodeSelector.setMRMLScene(slicer.mrmlScene)
+
       self.parent.show()
+      
     
   def setup(self):
 
@@ -60,6 +63,34 @@ class ThermalAblationPlanningModuleWidget:
     formLayout.addWidget(roiPlacementGroupBox)
     
     roiPlacementLayout = qt.QFormLayout(roiPlacementGroupBox)
+
+    self.inputVolumeNodeSelector = slicer.qMRMLNodeComboBox()
+    self.inputVolumeNodeSelector.objectName = 'inputVolumeNodeSelector'
+    self.inputVolumeNodeSelector.nodeTypes = ['vtkMRMLScalarVolumeNode']
+    self.inputVolumeNodeSelector.noneEnabled = False
+    self.inputVolumeNodeSelector.addEnabled = False
+    self.inputVolumeNodeSelector.removeEnabled = False
+    self.inputVolumeNodeSelector.addAttribute("vtkMRMLScalarVolumeNode", "LabelMap", "0")    
+    roiPlacementLayout.addRow("Input Volume:", self.inputVolumeNodeSelector)
+    self.parent.connect('mrmlSceneChanged(vtkMRMLScene*)',
+                        self.inputVolumeNodeSelector, 'setMRMLScene(vtkMRMLScene*)')
+    #self.inputVolumeNodeSelector.connect('currentNodeChanged(vtkMRMLNode*)', self.onInputVolumeChanged)
+    #self.inputVolumeNodeSelector.connect('nodeActivated(vtkMRMLNode*)', self.onInputVolumeChanged)
+    
+
+    self.fiducialsNodeSelector = slicer.qMRMLNodeComboBox()
+    self.fiducialsNodeSelector.objectName = "fiducialsNodeSelector"
+    self.nodeTypes = ['vtkMRMLAnnotationHierarchyNode']
+    self.fiducialsNodeSelector.baseName = "Target"
+    self.fiducialsNodeSelector.noneEnabled = False
+    self.fiducialsNodeSelector.addEnabled = False
+    self.fiducialsNodeSelector.removeEnabled = False
+    
+    roiPlacementLayout.addRow("Target Point:", self.fiducialsNodeSelector)
+    self.parent.connect('mrmlSceneChanged(vtkMRMLScene*)',
+                        self.fiducialsNodeSelector, 'setMRMLScene(vtkMRMLScene*)')     
+    
+    
     
     # todo: value -> instance variable
     roiPlacementLineEdit = qt.QLineEdit()
@@ -152,13 +183,12 @@ class ThermalAblationPlanningModuleWidget:
     ablationZoneEstimationLayout.addRow(drawAblationZoneButton)
     
   def onAddInsertionRadiusButtonClicked(self):
-    print "Add Insertion Radius "
-
+    currentValumeNode = self.inputVolumeNodeSelector.currentNode()
+    currentTargetNode = self.fiducialsNodeSelector.currentNode()
+    
+    
   def onAddProbeButtonClicked(self):
     print "Add Probe"
 
   def onDrawAblationZoneButtonClicked(self):
     print "Draw Ablation Zone"
-
-  
-
