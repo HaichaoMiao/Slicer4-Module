@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<devices>
+	<device>
+		<name>Galil Ice Seed</name>
+		<diameter>1.5</diameter>
+		<length>13</length>
+		<ablationzone_shape>
+			<volume>
+				30
+			</volume>
+		</ablationzone_shape>
+	</device>
+</devices>

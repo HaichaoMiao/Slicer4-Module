@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schema xmlns="http://www.w3.org/2001/XMLSchema" targetNamespace="http://www.example.org/devices" xmlns:tns="http://www.example.org/devices" elementFormDefault="qualified">
+    <xsd:element name="devices">
+    	<xsd:complexType>
+    		<xsd:sequence>
+    			<xsd:element ref="device" minOccurs="1" />
+    		</xsd:sequence>
+    	</xsd:complexType>
+    </xsd:element>
+    
+   <xsd:element name="device">
+   		<xsd:complexType>
+   			<xsd:sequence>
+   				<xsd:element name="name" type="xsd:string" />
+   				<xsd:element name="diameter" type="xsd:double" />
+   				<xsd:element name="length" type="xsd:double" />
+   				<xsd:element ref="ablationzone" />
+   			</xsd:sequence>
+   		</xsd:complexType>
+   </xsd:element>
+   
+   <xsd:element name="ablationzone_shape">
+   		<xsd:complexType>
+   			<xsd:sequence>
+   				<xsd:element name="volume" type="xsd:double" />
+   			</xsd:sequence>
+   		</xsd:complexType>
+   </xsd:element>
+   
+</schema>
