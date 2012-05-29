@@ -1,19 +1,56 @@
 \chapter{Planning Software for Supporting the Thermal Ablation Intervention}
 \section{Introduction}
 
-\section{Implementation of a Module in Slicer 4}
-\subsection{Challenges during Development}
+\section{Slicer}
 
-\section{Background}
-\subsection{Slicer 4}
-\subsection{Python}
-\subsection{Qt}
-\subsection{VTK and ITK}
-\subsection{git}
+\subsection{Introduction}
 
+Slicer is a free and open source software platform for medical imaging and visualization distributed under a BSD License. Slicer started as a master thesis in 1998 and since then it was mainly developed by the Surgical Planning Laboratory (SPL), which is part of Harvard Medical School. The current Version is Slicer 4.1 released in April of 2012 and it's cross-platform (Windows 7, Mac OS X, Linux). 
+
+The code base of Slicer consists over a million lines of (mostly C++ and Python) code \cite{slicer-intro}. It has many funders (National Institute of Health, National Alliance for Medical Image Computing, Biomedical Informatics Research Network etc.) and partners (Isomics Inc., Kitware Inc. etc.) who enables the ongoing development of Slicer \cite{slicer-intro}.
+
+\subsection{Slicer 4 Architecture}
+
+Slicer uses the Model-view-controller (MVC) paradigm for the it's architectural design. 
+
+\begin{itemize}
+\item Model: MRML (Medical Reality Markup Language)
+\begin{itemize}
+	\item the data model of Slicer 
+	\item MRML-nodes describes the scene and application state
+\end{itemize}
+\item Controller: Logic 
+\begin{itemize}
+	\item creates and manages MRML-nodes
+	\item VTK and ITK
+\end{itemize}
+\item View: GUI
+\begin{itemize}
+	\item User Interface (Qt)
+	\item Renderers
+\end{itemize}
+\end{itemize}
+
+One of Slicer main functionality is its expandability. It is a highly flexible and modular and It's easy to extend its functionality. A large number of toolkits integrated into the architecture, e.g. the Insight Segmentation and Registration Toolkit (ITK) for image processing, the Visualization Toolkit (VTK) for visualization, Qt for the user interface etc.
+
+\subsubsection{Python}
+
+Python is the language for scripting in Slicer. Slicer's APIs (MRML, Qt, VTK, ITK) are all wrapped. Python has become a very popular scripting language in the past years. It is more than just a scripting language: 
+\begin{itemize}
+\item object-oriented and automatic memory management
+\item many useful modules included
+\item widely accepted by the scientific community
+\item dynamically typed
+\end{itemize}
+
+
+\subsubsection{Qt}
+\subsubsection{VTK and ITK}
+\subsubsection{git}
+
+\subsection{Development of a Module for Slicer}
 \section{Results}
 
 \section{Discussion and Outlook}
 
-\section{Slicer 4 Development Tutorial}
 

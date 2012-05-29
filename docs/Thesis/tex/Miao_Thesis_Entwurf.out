@@ -1,20 +1,25 @@
-\BOOKMARK [0][-]{chapter.1}{Thermal Ablation Techniques in Cancer Therapy}{}% 1
-\BOOKMARK [1][-]{section.1.1}{Overview}{chapter.1}% 2
-\BOOKMARK [2][-]{subsection.1.1.1}{Background on Radiofrequency Ablation \(RFA\)}{section.1.1}% 3
-\BOOKMARK [2][-]{subsection.1.1.2}{Background on Cryotherapie}{section.1.1}% 4
-\BOOKMARK [2][-]{subsection.1.1.3}{Background on Microwave Based Ablation}{section.1.1}% 5
-\BOOKMARK [1][-]{section.1.2}{Decision Support for Performing Thermal Ablations}{chapter.1}% 6
-\BOOKMARK [2][-]{subsection.1.2.1}{Image-guided Procedure}{section.1.2}% 7
-\BOOKMARK [2][-]{subsection.1.2.2}{Workflow Description}{section.1.2}% 8
-\BOOKMARK [0][-]{chapter.2}{Planning Software for Supporting the Thermal Ablation Intervention}{}% 9
-\BOOKMARK [1][-]{section.2.1}{Introduction}{chapter.2}% 10
-\BOOKMARK [1][-]{section.2.2}{Background}{chapter.2}% 11
-\BOOKMARK [2][-]{subsection.2.2.1}{Slicer 4}{section.2.2}% 12
-\BOOKMARK [2][-]{subsection.2.2.2}{Python}{section.2.2}% 13
-\BOOKMARK [2][-]{subsection.2.2.3}{Qt}{section.2.2}% 14
-\BOOKMARK [2][-]{subsection.2.2.4}{VTK and ITK}{section.2.2}% 15
-\BOOKMARK [2][-]{subsection.2.2.5}{git}{section.2.2}% 16
-\BOOKMARK [1][-]{section.2.3}{Slicer Development Tutorial}{chapter.2}% 17
-\BOOKMARK [1][-]{section.2.4}{Results}{chapter.2}% 18
-\BOOKMARK [0][-]{chapter.3}{Conclusio}{}% 19
-\BOOKMARK [0][-]{chapter.4}{Terms and abbreviations}{}% 20
+\BOOKMARK [0][-]{chapter.1}{Image-guided Thermal Ablation}{}% 1
+\BOOKMARK [1][-]{section.1.1}{Introduction}{chapter.1}% 2
+\BOOKMARK [2][-]{subsection.1.1.1}{Overview}{section.1.1}% 3
+\BOOKMARK [2][-]{subsection.1.1.2}{Image Guidance and Minimal Invasiveness}{section.1.1}% 4
+\BOOKMARK [2][-]{subsection.1.1.3}{Advantages of Thermal Ablation}{section.1.1}% 5
+\BOOKMARK [1][-]{section.1.2}{Overview: Thermal Tumor Ablation}{chapter.1}% 6
+\BOOKMARK [2][-]{subsection.1.2.1}{Radiofrequency Ablation}{section.1.2}% 7
+\BOOKMARK [2][-]{subsection.1.2.2}{Cryoablation}{section.1.2}% 8
+\BOOKMARK [2][-]{subsection.1.2.3}{Microwave Ablation}{section.1.2}% 9
+\BOOKMARK [2][-]{subsection.1.2.4}{Laser Ablation}{section.1.2}% 10
+\BOOKMARK [2][-]{subsection.1.2.5}{Ultrasound}{section.1.2}% 11
+\BOOKMARK [2][-]{subsection.1.2.6}{Conclusion}{section.1.2}% 12
+\BOOKMARK [1][-]{section.1.3}{Decision Support for Performing Thermal Ablations}{chapter.1}% 13
+\BOOKMARK [2][-]{subsection.1.3.1}{Image-guided Procedure}{section.1.3}% 14
+\BOOKMARK [2][-]{subsection.1.3.2}{Workflow Description}{section.1.3}% 15
+\BOOKMARK [0][-]{chapter.2}{Planning Software for Supporting the Thermal Ablation Intervention}{}% 16
+\BOOKMARK [1][-]{section.2.1}{Introduction}{chapter.2}% 17
+\BOOKMARK [1][-]{section.2.2}{Slicer}{chapter.2}% 18
+\BOOKMARK [2][-]{subsection.2.2.1}{Introduction}{section.2.2}% 19
+\BOOKMARK [2][-]{subsection.2.2.2}{Slicer 4 Architecture}{section.2.2}% 20
+\BOOKMARK [2][-]{subsection.2.2.3}{Development of a Module for Slicer}{section.2.2}% 21
+\BOOKMARK [1][-]{section.2.3}{Results}{chapter.2}% 22
+\BOOKMARK [1][-]{section.2.4}{Discussion and Outlook}{chapter.2}% 23
+\BOOKMARK [0][-]{chapter.3}{Conclusio}{}% 24
+\BOOKMARK [0][-]{chapter.4}{Terms and abbreviations}{}% 25

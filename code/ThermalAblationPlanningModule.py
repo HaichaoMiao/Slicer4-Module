@@ -8,9 +8,11 @@ from xml.dom.minidom import parseString
 class ThermalAblationPlanningModule:
 
   def __init__(self, parent):
+      
     parent.title = "Thermal Ablation Planning"
-    parent.category = "Ablation"
-    parent.contributor = "Haichao Miao <hmiao87@gmail.com>"
+    parent.categories = ["Ablation"]
+    parent.dependencies = []
+    parent.contributors = ["Haichao Miao <hmiao87@gmail.com>"]
     parent.helpText = """
     Slicer 4 module for planning a thermal ablation procedure.
     For more information, read the README file.
@@ -20,15 +22,21 @@ class ThermalAblationPlanningModule:
     at the Vienna University of Technology.
     """
     self.parent = parent
-
+    
+    
 #
 # qThermalAblationPlanningModuleWidget
 #
+
+
+  if mainWindow(verbose=False): setupMacros()
+
 
 class ThermalAblationPlanningModuleWidget:
     
     
   def __init__(self, parent = None):
+    
     
     if not parent:
       self.parent = slicer.qMRMLWidget()
@@ -38,6 +46,7 @@ class ThermalAblationPlanningModuleWidget:
       self.parent = parent
       
     self.layout = self.parent.layout()
+    self.transform = None
     
     if not parent:
       self.setup()
@@ -71,7 +80,7 @@ class ThermalAblationPlanningModuleWidget:
 
     self.fiducialsNodeSelector = slicer.qMRMLNodeComboBox()
     self.fiducialsNodeSelector.objectName = "fiducialsNodeSelector"
-    self.nodeTypes = ['vtkMRMLAnnotationHierarchyNode']
+    self.fiducialsNodeSelector.nodeTypes = ['vtkMRMLAnnotationFiducialNode']
     self.fiducialsNodeSelector.baseName = "Target"
     self.fiducialsNodeSelector.noneEnabled = False
     self.fiducialsNodeSelector.addEnabled = False
@@ -108,8 +117,7 @@ class ThermalAblationPlanningModuleWidget:
     pointSelectionLayout = qt.QFormLayout(pointSelectionGroupBox)
     
     pointOneComboBox = slicer.qMRMLNodeComboBox()
-    
-    
+
     
     pointTwoComboBox = qt.QComboBox()
     
@@ -183,7 +191,7 @@ class ThermalAblationPlanningModuleWidget:
     slicer.mrmlScene.AddNode(newModelNode)
     currentModelNode = newModelNode
     self.outputModelNodeSelector.setCurrentNode(currentModelNode)        
-    
+    self.transform = model.transform
   
   def onAddInsertionRadiusButtonClicked(self):
     print "Add Insertion Radius"
@@ -198,75 +206,105 @@ class ThermalAblationPlanningModuleWidget:
     
     xmlData = xmlTag.replace('<devices>','').replace('</devices>','')
     
-    print xmlData
+    # print xmlData
     
-    model = TestSphere(self.fiducialsNodeSelector.currentNode())
+    drawProbe(self.fiducialsNodeSelector)
+    
     
   def onAddProbeButtonClicked(self):
     print "Add Probe"
+    
 
   def onDrawAblationZoneButtonClicked(self):
     print "Draw Ablation Zone"
 
-class TestSphere:
-  
+class drawProbe:
+    
   def __init__(self, fiducialListNode):
+    
     fids = fiducialListNode
     scene = slicer.mrmlScene
-
-    # Create model node
-    model = slicer.vtkMRMLModelNode()
-    model.SetScene(scene)
-    model.SetName("Path-%s" % fids.GetName())
     
+    probe = vtk.vtkCylinderSource()
+    probe.SetRadius(2)
+    probe.SetHeight(100)
+    probe.Update()
+    
+    cursor = slicer.vtkMRMLModelNode()
+    cursor.SetScene(scene)
+    cursor.SetName("Probe")
+    cursor.SetAndObservePolyData(probe.GetOutput())
+    
+    cursorModelDisplay = slicer.vtkMRMLModelDisplayNode()
+    cursorModelDisplay.SetColor(2, 2, 2)
+    cursorModelDisplay.SetScene(scene)
+    scene.AddNode(cursorModelDisplay)
+    cursor.SetAndObserveDisplayNodeID(cursorModelDisplay.GetID())
 
-    # Create display node
-    modelDisplay = slicer.vtkMRMLModelDisplayNode()
-    #modelDisplay.SetColor(1,1,0) # yellow
-    modelDisplay.SetScene(scene)
-    scene.AddNodeNoNotify(modelDisplay)
-    model.SetAndObserveDisplayNodeID(modelDisplay.GetID())
-
-    # Add to scene
-    modelDisplay.SetPolyData(model.GetPolyData())
-    scene.AddNode(model)
-
+    cursorModelDisplay.SetPolyData(probe.GetOutput())
+    
+    scene.AddNode(cursor)
+    
+    ablationZone = drawAblationZoneSphere(fids.currentNode())
+    
+    cursor.SetAndObserveTransformNodeID(ablationZone.transform.GetID())
+    
+    
+class drawAblationZoneSphere:
+  
+  def __init__(self, fiducialListNode):
+    target = fiducialListNode
+    
+    scene = slicer.mrmlScene
+    
     # Camera cursor
     sphere = vtk.vtkSphereSource()
-    sphere.SetRadius(100)
+    sphere.SetRadius(30)
     sphere.Update()
-
 
     # Create model node
     cursor = slicer.vtkMRMLModelNode()
     cursor.SetScene(scene)
-    cursor.SetName("Cursor-%s" % fids.GetName())
+    cursor.SetName("Cursor-%s" % target.GetName())
     cursor.SetAndObservePolyData(sphere.GetOutput())
 
     # Create display node
     cursorModelDisplay = slicer.vtkMRMLModelDisplayNode()
-    cursorModelDisplay.SetColor(1,1,0) # red
+    cursorModelDisplay.SetColor(0,0,128)
+    cursorModelDisplay.SetOpacity(0.4)
     cursorModelDisplay.SetScene(scene)
-    scene.AddNodeNoNotify(cursorModelDisplay)
+    scene.AddNode(cursorModelDisplay)
     cursor.SetAndObserveDisplayNodeID(cursorModelDisplay.GetID())
 
     # Add to scene
     cursorModelDisplay.SetPolyData(sphere.GetOutput())
+    
     scene.AddNode(cursor)
-
+    
     # Create transform node
     transform = slicer.vtkMRMLLinearTransformNode()
-    transform.SetName('Transform-%s' % fids.GetName())
+    transform.SetName('Transform-%s' % target.GetName())
     
     scene.AddNode(transform)
-    cursor.SetAndObserveTransformNodeID(transform.GetID())
     
     # Translation
     transformMatrix = vtk.vtkMatrix4x4()
-    transformMatrix.SetElement(0,3, 100)
-    transformMatrix.SetElement(1,3, 100)
+    
+    # get coordinates from current fiducial
+    currentFiducialCoordinatesRAS = [0, 0, 0]
+    
+    target.GetFiducialCoordinates(currentFiducialCoordinatesRAS)
+    
+    transformMatrix.SetElement(0, 3, currentFiducialCoordinatesRAS[0])
+    transformMatrix.SetElement(1, 3, currentFiducialCoordinatesRAS[1])
+    transformMatrix.SetElement(2, 3, currentFiducialCoordinatesRAS[2])
     
     transform.ApplyTransformMatrix(transformMatrix)
+
+    cursor.SetAndObserveTransformNodeID(transform.GetID())
+    
+    # needs to be set to center, otherwise the RAS vector will be duplicated
+    target.SetFiducialCoordinates(0, 0, 0)
+    target.SetAndObserveTransformNodeID(transform.GetID())
     
     self.transform = transform
-    
