@@ -14,7 +14,7 @@
    				<xsd:element name="name" type="xsd:string" />
    				<xsd:element name="diameter" type="xsd:double" />
    				<xsd:element name="length" type="xsd:double" />
-   				<xsd:element ref="ablationzone" />
+   				<xsd:element ref="ablationzone_shape" />
    			</xsd:sequence>
    		</xsd:complexType>
    </xsd:element>

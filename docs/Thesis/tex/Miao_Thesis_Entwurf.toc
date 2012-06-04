@@ -1,4 +1,4 @@
-\contentsline {chapter}{\numberline {1}Image-guided Thermal Ablation}{6}{chapter.1}
+\contentsline {chapter}{\numberline {1}Image-guided Thermal Ablation Techniques}{6}{chapter.1}
 \contentsline {section}{\numberline {1.1}Introduction}{6}{section.1.1}
 \contentsline {subsection}{\numberline {1.1.1}Overview}{6}{subsection.1.1.1}
 \contentsline {subsection}{\numberline {1.1.2}Image Guidance and Minimal Invasiveness}{7}{subsection.1.1.2}
@@ -23,17 +23,18 @@
 \contentsline {section}{\numberline {1.3}Decision Support for Performing Thermal Ablations}{12}{section.1.3}
 \contentsline {subsection}{\numberline {1.3.1}Image-guided Procedure}{12}{subsection.1.3.1}
 \contentsline {subsection}{\numberline {1.3.2}Workflow Description}{12}{subsection.1.3.2}
-\contentsline {chapter}{\numberline {2}Planning Software for Supporting the Thermal Ablation Intervention}{13}{chapter.2}
+\contentsline {chapter}{\numberline {2}Requirement Analysis}{13}{chapter.2}
 \contentsline {section}{\numberline {2.1}Introduction}{13}{section.2.1}
-\contentsline {section}{\numberline {2.2}Slicer}{13}{section.2.2}
-\contentsline {subsection}{\numberline {2.2.1}Introduction}{13}{subsection.2.2.1}
-\contentsline {subsection}{\numberline {2.2.2}Slicer 4 Architecture}{13}{subsection.2.2.2}
-\contentsline {subsubsection}{Python}{14}{section*.16}
-\contentsline {subsubsection}{Qt}{14}{section*.17}
-\contentsline {subsubsection}{VTK and ITK}{14}{section*.18}
-\contentsline {subsubsection}{git}{14}{section*.19}
-\contentsline {subsection}{\numberline {2.2.3}Development of a Module for Slicer}{14}{subsection.2.2.3}
-\contentsline {section}{\numberline {2.3}Results}{14}{section.2.3}
-\contentsline {section}{\numberline {2.4}Discussion and Outlook}{14}{section.2.4}
-\contentsline {chapter}{\numberline {3}Conclusio}{15}{chapter.3}
-\contentsline {chapter}{\numberline {4}Terms and abbreviations}{16}{chapter.4}
+\contentsline {chapter}{\numberline {3}Planning Software for Supporting the Thermal Ablation Intervention}{15}{chapter.3}
+\contentsline {section}{\numberline {3.1}Introduction}{15}{section.3.1}
+\contentsline {section}{\numberline {3.2}Slicer}{15}{section.3.2}
+\contentsline {subsection}{\numberline {3.2.1}Introduction}{15}{subsection.3.2.1}
+\contentsline {subsection}{\numberline {3.2.2}Slicer 4 Architecture}{15}{subsection.3.2.2}
+\contentsline {subsubsection}{Python}{16}{section*.16}
+\contentsline {subsubsection}{Qt}{16}{section*.17}
+\contentsline {subsubsection}{VTK and ITK}{17}{section*.18}
+\contentsline {subsection}{\numberline {3.2.3}Developing a Scripted Module in Slicer}{17}{subsection.3.2.3}
+\contentsline {section}{\numberline {3.3}Results}{17}{section.3.3}
+\contentsline {section}{\numberline {3.4}Discussion and Outlook}{17}{section.3.4}
+\contentsline {chapter}{\numberline {4}Conclusio}{18}{chapter.4}
+\contentsline {chapter}{\numberline {5}Terms and abbreviations}{19}{chapter.5}

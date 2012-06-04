@@ -1,56 +1,17 @@
-\chapter{Planning Software for Supporting the Thermal Ablation Intervention}
+% heat sink effect
+\chapter{Requirement Analysis}
 \section{Introduction}
 
-\section{Slicer}
-
-\subsection{Introduction}
-
-Slicer is a free and open source software platform for medical imaging and visualization distributed under a BSD License. Slicer started as a master thesis in 1998 and since then it was mainly developed by the Surgical Planning Laboratory (SPL), which is part of Harvard Medical School. The current Version is Slicer 4.1 released in April of 2012 and it's cross-platform (Windows 7, Mac OS X, Linux). 
-
-The code base of Slicer consists over a million lines of (mostly C++ and Python) code \cite{slicer-intro}. It has many funders (National Institute of Health, National Alliance for Medical Image Computing, Biomedical Informatics Research Network etc.) and partners (Isomics Inc., Kitware Inc. etc.) who enables the ongoing development of Slicer \cite{slicer-intro}.
-
-\subsection{Slicer 4 Architecture}
-
-Slicer uses the Model-view-controller (MVC) paradigm for the it's architectural design. 
-
+Thermal Ablation Techniques are gaining popularity as a complementary choice of therapy for different tumors. Although it is commonly considered a safe and low-risk technique, it still suffers from a noticeable rate of complications. A review showed that complication rate of RFA for liver tumors are higher than previously assumed \cite{mulier-rfa}. RFA treatments still has higher tumor recurrence rate than surgical resection. The treatment outcome of an intervention is highly influenced by different factors:
 \begin{itemize}
-\item Model: MRML (Medical Reality Markup Language)
-\begin{itemize}
-	\item the data model of Slicer 
-	\item MRML-nodes describes the scene and application state
-\end{itemize}
-\item Controller: Logic 
-\begin{itemize}
-	\item creates and manages MRML-nodes
-	\item VTK and ITK
-\end{itemize}
-\item View: GUI
-\begin{itemize}
-	\item User Interface (Qt)
-	\item Renderers
-\end{itemize}
+\item The placement of the applicator(s) is by far the most time-consuming part of the process. Tumors larger in size or multiple small tumors require repeated applicator placement and ablation.
+However the accurate placement is essential for the efficient treatment. 
+\item The imaging modalities for the guidance of the applicator placement and monitoring the developing ablation zone. Ultrasound is the most frequently used modality, but it is inadequate for imaging the ablation zone accurately \cite{diss-schramm} 
+\item Larger tumors require lager ablation zones, but this is accompanied by loss of control with an increased rate of damage to healthy tissue. 
+\item Large vessels adjacent to the tumor are more difficult to ablate completely since the blood flow acts like a heat sink (see heat sink effect).
+\item Since Thermal Ablation Techniques are technology-based treatments, the outcome is highly dependent on the wide variation of probe devices, imaging modalities and experience of the operator with these technologies. 
 \end{itemize}
 
-One of Slicer main functionality is its expandability. It is a highly flexible and modular and It's easy to extend its functionality. A large number of toolkits integrated into the architecture, e.g. the Insight Segmentation and Registration Toolkit (ITK) for image processing, the Visualization Toolkit (VTK) for visualization, Qt for the user interface etc.
+The accurate estimation of the ablation zone and treatment result is essential for the success of the intervention. Due to the fact that the above mentioned factors has great influence on the outcome of a Thermal Ablation intervention, the thesis focusses on developing a treatment planning system. This system estimates the ablation zone based on the patient-specific anatomy using 3D visualization and virtually place applicators. \\
 
-\subsubsection{Python}
-
-Python is the language for scripting in Slicer. Slicer's APIs (MRML, Qt, VTK, ITK) are all wrapped. Python has become a very popular scripting language in the past years. It is more than just a scripting language: 
-\begin{itemize}
-\item object-oriented and automatic memory management
-\item many useful modules included
-\item widely accepted by the scientific community
-\item dynamically typed
-\end{itemize}
-
-
-\subsubsection{Qt}
-\subsubsection{VTK and ITK}
-\subsubsection{git}
-
-\subsection{Development of a Module for Slicer}
-\section{Results}
-
-\section{Discussion and Outlook}
-
-
+Dr. Wolfgang Schramm has reviewed the requirements on such a system in his phd-thesis and therefore the planning software is mostly based on the requirement analysis did by him. 

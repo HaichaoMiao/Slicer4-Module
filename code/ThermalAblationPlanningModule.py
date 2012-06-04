@@ -1,9 +1,37 @@
 from __main__ import vtk, qt, ctk, slicer
-from xml.dom.minidom import parseString
+import xml.dom.minidom
+import random
 
+# when moving the sphere, the 2d does not update
+# placement of a ROI around of the tumor
+# labeling of probes in the 3D View
+# ablation zones are always spheres?
+# label maps?
 
 # ThermalAblationPlanningModule
 #
+
+# only test data
+document = """\
+<devices>
+    <device>
+        <name>Galil ICE Seed</name>
+        <diameter>12</diameter>
+        <length>130</length>
+        <ablationzone_shape>
+            <volume>15</volume>
+        </ablationzone_shape>
+    </device>
+    <device>
+        <name>Galil ICE Rod</name>
+        <diameter>8</diameter>
+        <length>120</length>
+        <ablationzone_shape>
+            <volume>20</volume>
+        </ablationzone_shape>
+    </device>
+</devices>
+"""
 
 class ThermalAblationPlanningModule:
 
@@ -23,20 +51,14 @@ class ThermalAblationPlanningModule:
     """
     self.parent = parent
     
-    
 #
 # qThermalAblationPlanningModuleWidget
 #
 
-
-  if mainWindow(verbose=False): setupMacros()
-
-
 class ThermalAblationPlanningModuleWidget:
-    
-    
+
   def __init__(self, parent = None):
-    
+      
     
     if not parent:
       self.parent = slicer.qMRMLWidget()
@@ -50,7 +72,7 @@ class ThermalAblationPlanningModuleWidget:
     
     if not parent:
       self.setup()
-      self.fiducialsNodeSelector.setMRMLScene(slicer.mrmlScene)
+      self.entryPointFiducialsNodeSelector.setMRMLScene(slicer.mrmlScene)
 
       self.parent.show()
       
@@ -68,109 +90,90 @@ class ThermalAblationPlanningModuleWidget:
     
     formLayout = qt.QFormLayout(probePlacementPlanningCollapsibleButton)
 
-    # ROI Placement
+    # 1: Device Selection
     
-    roiPlacementGroupBox = qt.QGroupBox()
-    roiPlacementGroupBox.setTitle("1: ROI Placement")
-    self.roiPlacementGroupBox = roiPlacementGroupBox
+    deviceSelectionGroupBox = qt.QGroupBox()
+    deviceSelectionGroupBox.setTitle("1: Device Selection")
+    self.deviceSelectionGroupBox = deviceSelectionGroupBox
     
-    formLayout.addWidget(roiPlacementGroupBox)
+    formLayout.addWidget(deviceSelectionGroupBox)
     
-    roiPlacementLayout = qt.QFormLayout(roiPlacementGroupBox)
+    deviceSelectionLayout = qt.QFormLayout(deviceSelectionGroupBox)
+    
+    devicesComboBox = qt.QComboBox()
 
-    self.fiducialsNodeSelector = slicer.qMRMLNodeComboBox()
-    self.fiducialsNodeSelector.objectName = "fiducialsNodeSelector"
-    self.fiducialsNodeSelector.nodeTypes = ['vtkMRMLAnnotationFiducialNode']
-    self.fiducialsNodeSelector.baseName = "Target"
-    self.fiducialsNodeSelector.noneEnabled = False
-    self.fiducialsNodeSelector.addEnabled = False
-    self.fiducialsNodeSelector.removeEnabled = False
+    self.parseDevices()
     
-    roiPlacementLayout.addRow("Target Point:", self.fiducialsNodeSelector)
-    self.parent.connect('mrmlSceneChanged(vtkMRMLScene*)',
-                        self.fiducialsNodeSelector, 'setMRMLScene(vtkMRMLScene*)')     
-     
+    for device in self.devices:
+      devicesComboBox.addItem(device.name)
+      
+      
+    self.devicesComboBox = devicesComboBox
     
+    deviceSelectionLayout.addRow("Select Device: ", devicesComboBox)
     
-    # todo: value -> instance variable
-    roiPlacementLineEdit = qt.QLineEdit()
-    roiPlacementLineEdit.text = "100"
-    self.roiPlacementLineEdit = roiPlacementLineEdit
+    # self.devicesComboBox.connect('currentIndexChanged(int)', self.onDeviceComboBoxChanged)
     
-    addInsertionRadiusButton = qt.QPushButton("Add Insertion Radius")
-    addInsertionRadiusButton.toolTip = "Add Insertion Radius"
-    
-    addInsertionRadiusButton.connect('clicked(bool)', self.onAddInsertionRadiusButtonClicked)
-    
-    roiPlacementLayout.addRow(roiPlacementLineEdit, addInsertionRadiusButton)
-    
-    self.addInsertionRadiusButton = addInsertionRadiusButton
-    
-    # 2a: Point Selection
-
-    pointSelectionGroupBox = qt.QGroupBox()
-    pointSelectionGroupBox.setTitle("2a: Point Selection")
-    self.pointSelectionGroupBox = pointSelectionGroupBox
-    
-    formLayout.addWidget(pointSelectionGroupBox)
-    
-    pointSelectionLayout = qt.QFormLayout(pointSelectionGroupBox)
-    
-    pointOneComboBox = slicer.qMRMLNodeComboBox()
-
-    
-    pointTwoComboBox = qt.QComboBox()
-    
-    # todo: fill with point selection
-    self.pointOneComboBox = pointOneComboBox
-    self.pointTwoComboBox = pointTwoComboBox
-    
-    pointSelectionLayout.addRow(pointOneComboBox, pointTwoComboBox)
-    
-    # 2b: Probe Placement
+    # Probe Placement
     
     probePlacementGroupBox = qt.QGroupBox()
-    probePlacementGroupBox.setTitle("2b: Probe Placement")
+    probePlacementGroupBox.setTitle("2: Probe Placement")
     self.probePlacementGroupBox = probePlacementGroupBox
     
     formLayout.addWidget(probePlacementGroupBox)
     
     probePlacementLayout = qt.QFormLayout(probePlacementGroupBox)
-    
-    addProbeButton = qt.QPushButton("Add Probe")
-    addProbeButton.toolTip = "Add Probe"
-    self.addProbeButton = addProbeButton
-    
-    addProbeButton.connect('clicked(bool)', self.onAddProbeButtonClicked)
-   
-    probeLineEdit = qt.QLineEdit()
-    # todo: value -> instance variable
-    probeLineEdit.text = "Probe 1"
-    
-    self.probeLineEdit = probeLineEdit
-    
-    probePlacementLayout.addRow(addProbeButton, probeLineEdit)
-    
-    # 3: Ablation Zone Estimation
-    
-    ablationZoneEstimationGroupBox = qt.QGroupBox()
-    ablationZoneEstimationGroupBox.setTitle("3: Ablation Zone Estimation")
-    self.ablationZoneEstimationGroupBox = ablationZoneEstimationGroupBox
-    
-    formLayout.addWidget(ablationZoneEstimationGroupBox)
-    
-    ablationZoneEstimationLayout = qt.QFormLayout(ablationZoneEstimationGroupBox)
-    
-    
-    
-    devicesComboBox = qt.QComboBox()
 
-    self.devices = ["Galil ICE Sphere", "Galil ICE Rod", "Galil ICE Seed", "Rita Stardust XL", "Radionics CoolTip", "Radionics Cluster Probe"]
+    self.entryPointFiducialsNodeSelector = slicer.qMRMLNodeComboBox()
+    self.entryPointFiducialsNodeSelector.objectName = "entryPointFiducialsNodeSelector"
+    self.entryPointFiducialsNodeSelector.nodeTypes = ['vtkMRMLAnnotationFiducialNode']
+    self.entryPointFiducialsNodeSelector.baseName = "Entry Point"
+    self.entryPointFiducialsNodeSelector.noneEnabled = False
+    self.entryPointFiducialsNodeSelector.addEnabled = False
+    self.entryPointFiducialsNodeSelector.removeEnabled = False
     
-    for device in self.devices:
-      devicesComboBox.addItem(device)
+    probePlacementLayout.addRow("Entry Point:", self.entryPointFiducialsNodeSelector)
+    self.parent.connect('mrmlSceneChanged(vtkMRMLScene*)',
+                        self.entryPointFiducialsNodeSelector, 'setMRMLScene(vtkMRMLScene*)')     
     
-    self.devicesComboBox = devicesComboBox
+    self.targetFiducialsNodeSelector = slicer.qMRMLNodeComboBox()
+    self.targetFiducialsNodeSelector.objectName = "targetFiducialsNodeSelector"
+    self.targetFiducialsNodeSelector.nodeTypes = ['vtkMRMLAnnotationFiducialNode']
+    self.targetFiducialsNodeSelector.baseName = "Target Point"
+    self.targetFiducialsNodeSelector.noneEnabled = False
+    self.targetFiducialsNodeSelector.addEnabled = False
+    self.targetFiducialsNodeSelector.removeEnabled = False
+    
+    probePlacementLayout.addRow("Target Point:", self.targetFiducialsNodeSelector)
+    self.parent.connect('mrmlSceneChanged(vtkMRMLScene*)',
+                        self.targetFiducialsNodeSelector, 'setMRMLScene(vtkMRMLScene*)')   
+    
+    placeProbeButton = qt.QPushButton("Place Probe")
+    placeProbeButton.toolTip = "Place Probe"
+    self.placeProbeButton = placeProbeButton
+    
+    placeProbeButton.connect('clicked(bool)', self.onPlaceProbeButtonClicked)
+    
+    self.probeNameLineEdit = qt.QLineEdit()
+    
+    self.probeCnt = 1
+    
+    self.probeNameLineEdit.text = 'Probe ' + str(self.probeCnt)
+    
+    probePlacementLayout.addRow(self.probeNameLineEdit, placeProbeButton)
+    self.parent.connect('mrmlSceneChanged(vtkMRMLScene*)',
+                        self.probeNameLineEdit, 'setMRMLScene(vtkMRMLScene*)')  
+    
+    
+    # 3: Draw Ablation Zone
+
+    drawAblationZoneGroupBox = qt.QGroupBox()
+    drawAblationZoneGroupBox.setTitle("3: Draw Ablation Zone")
+    self.drawAblationZoneGroupBox = drawAblationZoneGroupBox
+    
+    formLayout.addWidget(drawAblationZoneGroupBox)
+    
+    drawAblationZoneLayout = qt.QFormLayout(drawAblationZoneGroupBox)
     
     drawAblationZoneButton = qt.QPushButton("Draw Ablation Zone")
     drawAblationZoneButton.toolTip = "Draw Ablation Zone"
@@ -178,114 +181,361 @@ class ThermalAblationPlanningModuleWidget:
     
     drawAblationZoneButton.connect('clicked(bool)', self.onDrawAblationZoneButtonClicked)
     
-    ablationZoneEstimationLayout.addRow("Select Device: ", devicesComboBox)
-    ablationZoneEstimationLayout.addRow(drawAblationZoneButton)
+    drawAblationZoneLayout.addRow(drawAblationZoneButton)
     
-  def onAddInsertionRadiusButtonClicked(self):
-    currentValumeNode = self.inputVolumeNodeSelector.currentNode()
-    currentTargetNode = self.fiducialsNodeSelector.currentNode()
+  def parseDevices(self):
     
-    newModelNode = slicer.mrmlScene.CreateNodeByClass("vtkMRMLModelNode")
-    newModelNode.SetScene(slicer.mrmlScene)
-    newModelNode.SetName(slicer.mrmlScene.GetUniqueNameByString(self.outputModelNodeSelector.baseName))        
-    slicer.mrmlScene.AddNode(newModelNode)
-    currentModelNode = newModelNode
-    self.outputModelNodeSelector.setCurrentNode(currentModelNode)        
-    self.transform = model.transform
+    dom = xml.dom.minidom.parseString(document)
+    
+    self.devices = []
+    
+    for num, elem in enumerate(dom.getElementsByTagName("device")):
+      for node in elem.getElementsByTagName("name"):
+          name = node.childNodes[0].nodeValue
+      for node in elem.getElementsByTagName("diameter"):
+          diameter = node.childNodes[0].nodeValue
+      for node in elem.getElementsByTagName("length"):
+          length = node.childNodes[0].nodeValue
+      for node in elem.getElementsByTagName("volume"):
+          volume = node.childNodes[0].nodeValue
+      
+      self.devices.append(device(name, int(diameter), int(length), int(volume)))
   
-  def onAddInsertionRadiusButtonClicked(self):
-    print "Add Insertion Radius"
+  def onPlaceProbeButtonClicked(self):
     
-    file = open('/Users/haichao/git/Slicer4-Module/code/devices.xml', 'r')
+    drawProbe(self.entryPointFiducialsNodeSelector.currentNode(), self.targetFiducialsNodeSelector.currentNode(), self.devices[self.devicesComboBox.currentIndex].length, self.devices[self.devicesComboBox.currentIndex].diameter)
     
-    data = file.read()
+    self.probeCnt = self.probeCnt + 1
+      
+    self.probeNameLineEdit.setText('Probe ' + str(self.probeCnt))
     
-    dom = parseString(data)
-    
-    xmlTag = dom.getElementsByTagName('devices')[0].toxml()
-    
-    xmlData = xmlTag.replace('<devices>','').replace('</devices>','')
-    
-    # print xmlData
-    
-    drawProbe(self.fiducialsNodeSelector)
-    
-    
-  def onAddProbeButtonClicked(self):
-    print "Add Probe"
-    
-
   def onDrawAblationZoneButtonClicked(self):
-    print "Draw Ablation Zone"
+      
+      drawAblationZoneSphere(self.targetFiducialsNodeSelector.currentNode(), self.devices[self.devicesComboBox.currentIndex].volume) 
 
 class drawProbe:
     
-  def __init__(self, fiducialListNode):
+  def __init__(self, entryPointFiducialListNode, targetFiducialListNode, length, diameter):
     
-    fids = fiducialListNode
+    entryPointFid = entryPointFiducialListNode
+    targetFid = targetFiducialListNode
     scene = slicer.mrmlScene
     
     probe = vtk.vtkCylinderSource()
-    probe.SetRadius(2)
-    probe.SetHeight(100)
+    probe.SetRadius(diameter / 2)
+    probe.SetHeight(length)
+    
     probe.Update()
     
-    cursor = slicer.vtkMRMLModelNode()
-    cursor.SetScene(scene)
-    cursor.SetName("Probe")
-    cursor.SetAndObservePolyData(probe.GetOutput())
+    '''
+    # Create the axes and the associated mapper and actor.   
+    axes = vtk.vtkAxes()   
+    axes.SetOrigin(0, 0, 0)   
+    axesMapper = vtk.vtkPolyDataMapper()   
+    axesMapper.SetInputConnection(axes.GetOutputPort())   
+    axesActor = vtk.vtkActor()   
+    axesActor.SetMapper(axesMapper)   
+       
+    # Create the 3D text and the associated mapper and follower (a type of   
+    # actor).  Position the text so it is displayed over the origin of the   
+    # axes.   
+    atext = vtk.vtkVectorText()   
+    atext.SetText("Origin")   
+    textMapper = vtk.vtkPolyDataMapper()   
+    textMapper.SetInputConnection(atext.GetOutputPort())   
+    textActor = vtk.vtkFollower()   
+    textActor.SetMapper(textMapper)   
+    textActor.SetScale(0.2, 0.2, 0.2)   
+    textActor.AddPosition(0, -0.1, 0)   
+       
     
-    cursorModelDisplay = slicer.vtkMRMLModelDisplayNode()
-    cursorModelDisplay.SetColor(2, 2, 2)
-    cursorModelDisplay.SetScene(scene)
-    scene.AddNode(cursorModelDisplay)
-    cursor.SetAndObserveDisplayNodeID(cursorModelDisplay.GetID())
+    # Create the Renderer, RenderWindow, and RenderWindowInteractor.   
+    ren = vtk.vtkRenderer()   
+    renWin = vtk.vtkRenderWindow()   
+    renWin.AddRenderer(ren)   
+    iren = vtk.vtkRenderWindowInteractor()   
+    iren.SetRenderWindow(renWin)   
+       
+    # Add the actors to the renderer.   
+    ren.AddActor(axesActor)   
+    ren.AddActor(textActor)   
+       
+    # Zoom in closer.   
+    ren.ResetCamera()   
+    ren.GetActiveCamera().Zoom(1.6)   
+       
+    # Reset the clipping range of the camera; set the camera of the   
+    # follower; render.   
+    ren.ResetCameraClippingRange()   
+    textActor.SetCamera(ren.GetActiveCamera())   
+       
+    iren.Initialize()   
+    renWin.Render()   
+    iren.Start() 
+    '''
+    
+    probeModel = slicer.vtkMRMLModelNode()
+    probeModel.SetScene(scene)
+    probeModel.SetName("Probe")
+    probeModel.SetAndObservePolyData(probe.GetOutput())
+    
+    probeModelDisplay = slicer.vtkMRMLModelDisplayNode()
+    probeModelDisplay.SetColor(2, 2, 2)
+    probeModelDisplay.SliceIntersectionVisibilityOn()
+    probeModelDisplay.SetScene(scene)
+    scene.AddNode(probeModelDisplay)
+    probeModel.SetAndObserveDisplayNodeID(probeModelDisplay.GetID())
 
-    cursorModelDisplay.SetPolyData(probe.GetOutput())
+    probeModelDisplay.SetPolyData(probe.GetOutput())
     
-    scene.AddNode(cursor)
+    scene.AddNode(probeModel)
     
-    ablationZone = drawAblationZoneSphere(fids.currentNode())
+    # Create probeTransform node
+    probeTransform = slicer.vtkMRMLLinearTransformNode()
+    probeTransform.SetName('Transform-%s' % entryPointFid.GetName())
     
-    cursor.SetAndObserveTransformNodeID(ablationZone.transform.GetID())
+    scene.AddNode(probeTransform)
+    
+    # Translation
+    transformMatrix = vtk.vtkMatrix4x4()
+    
+    # get coordinates from current fiducial
+    currentFiducialCoordinatesRAS = [0, 0, 0]
+    
+    entryPointFid.GetFiducialCoordinates(currentFiducialCoordinatesRAS)
+    
+    transformMatrix.SetElement(0, 3, currentFiducialCoordinatesRAS[0])
+    transformMatrix.SetElement(1, 3, currentFiducialCoordinatesRAS[1])
+    transformMatrix.SetElement(2, 3, currentFiducialCoordinatesRAS[2])
+    
+    probeTransform.ApplyTransformMatrix(transformMatrix)
+    
+    probeModel.SetAndObserveTransformNodeID(probeTransform.GetID())
+    
+    # test 
+    
+    USER_MATRIX = False
+    
+    #Create an arrow.
+    cylinder = vtk.vtkArrowSource()
+    # cylinder.SetHeight(3)
+    # cylinder.SetRadius(2)
+    
+    # Generate a random start and end point
+    random.seed(8775070)
+    startPoint = [0 for i in range(3)]
+    startPoint[0] = random.uniform(-10,10)
+    startPoint[1] = random.uniform(-10,10)
+    startPoint[2] = random.uniform(-10,10)
+    endPoint = [0 for i in range(3)]
+    endPoint[0] = random.uniform(-10,10)
+    endPoint[1] = random.uniform(-10,10)
+    endPoint[2] = random.uniform(-10,10)
+     
+    # Compute a basis
+    normalizedX = [0 for i in range(3)]
+    normalizedY = [0 for i in range(3)]
+    normalizedZ = [0 for i in range(3)]
+     
+    # The X axis is a vector from start to end
+    math = vtk.vtkMath()
+    math.Subtract(endPoint, startPoint, normalizedX)
+    length = math.Norm(normalizedX)
+    math.Normalize(normalizedX)
+     
+    # The Z axis is an arbitrary vector cross X
+    arbitrary = [0 for i in range(3)]
+    arbitrary[0] = random.uniform(-10,10)
+    arbitrary[1] = random.uniform(-10,10)
+    arbitrary[2] = random.uniform(-10,10)
+    math.Cross(normalizedX, arbitrary, normalizedZ)
+    math.Normalize(normalizedZ)
+     
+    # The Y axis is Z cross X
+    math.Cross(normalizedZ, normalizedX, normalizedY)
+    matrix = vtk.vtkMatrix4x4()
+     
+    # Create the direction cosine matrix
+    matrix.Identity()
+    for i in range(3):
+      matrix.SetElement(i, 0, normalizedX[i])
+      matrix.SetElement(i, 1, normalizedY[i])
+      matrix.SetElement(i, 2, normalizedZ[i])
+     
+    # Apply the transforms
+    transform = vtk.vtkTransform()
+    transform.Translate(startPoint)
+    transform.Concatenate(matrix)
+    transform.Scale(length, length, length)
+     
+    # Transform the polydata
+    transformPD = vtk.vtkTransformPolyDataFilter()
+    transformPD.SetTransform(transform)
+    transformPD.SetInputConnection(cylinder.GetOutputPort())
+     
+    #Create a mapper and actor for the arrow
+    mapper = vtk.vtkPolyDataMapper()
+    actor = vtk.vtkActor()
+     
+    if USER_MATRIX:
+        mapper.SetInputConnection(cylinder.GetOutputPort())
+        actor.SetUserMatrix(transform.GetMatrix())
+    else:
+        mapper.SetInputConnection(transformPD.GetOutputPort())
+     
+    actor.SetMapper(mapper)
+     
+    # Create spheres for start and end point
+    sphereStartSource = vtk.vtkSphereSource()
+    sphereStartSource.SetCenter(startPoint)
+    sphereStartMapper = vtk.vtkPolyDataMapper()
+    sphereStartMapper.SetInputConnection(sphereStartSource.GetOutputPort())
+    sphereStart = vtk.vtkActor()
+    sphereStart.SetMapper(sphereStartMapper)
+    sphereStart.GetProperty().SetColor(1.0, 1.0, .3)
+     
+    sphereEndSource = vtk.vtkSphereSource()
+    sphereEndSource.SetCenter(endPoint)
+    sphereEndMapper = vtk.vtkPolyDataMapper()
+    sphereEndMapper.SetInputConnection(sphereEndSource.GetOutputPort())
+    sphereEnd = vtk.vtkActor()
+    sphereEnd.SetMapper(sphereEndMapper)
+    sphereEnd.GetProperty().SetColor(1.0, .3, .3)
     
     
+    # Create model node
+    model1 = slicer.vtkMRMLModelNode()
+    model1.SetScene(scene)
+    model1.SetName("model1-%s" % targetFid.GetName())
+    model1.SetAndObservePolyData(sphereStartSource.GetOutput())
+
+    # Create display node
+    model1display = slicer.vtkMRMLModelDisplayNode()
+    model1display.SetColor(0,100,0)
+    model1display.SetOpacity(1)
+    model1display.SliceIntersectionVisibilityOn()
+    
+    model1display.SetScene(scene)
+    scene.AddNode(model1display)
+    model1.SetAndObserveDisplayNodeID(model1display.GetID())
+
+    # Add to scene
+    model1display.SetPolyData(sphereStartSource.GetOutput())
+    
+    scene.AddNode(model1)
+    
+    model2 = slicer.vtkMRMLModelNode()
+    
+    # Create model node
+    model2 = slicer.vtkMRMLModelNode()
+    model2.SetScene(scene)
+    model2.SetName("model2-%s" % targetFid.GetName())
+    model2.SetAndObservePolyData(sphereEndSource.GetOutput())
+
+    # Create display node
+    model2display = slicer.vtkMRMLModelDisplayNode()
+    model2display.SetColor(0,100,0)
+    model2display.SetOpacity(1)
+    model2display.SliceIntersectionVisibilityOn()
+    
+    model2display.SetScene(scene)
+    scene.AddNode(model2display)
+    model2.SetAndObserveDisplayNodeID(model2display.GetID())
+
+    # Add to scene
+    model2display.SetPolyData(sphereEndSource.GetOutput())
+    
+    scene.AddNode(model2)
+    
+    # Create model node
+    model3 = slicer.vtkMRMLModelNode()
+    model3.SetScene(scene)
+    model3.SetName("model3-%s" % targetFid.GetName())
+    model3.SetAndObservePolyData(cylinder.GetOutput())
+
+    # Create display node
+    model3display = slicer.vtkMRMLModelDisplayNode()
+    model3display.SetColor(0,100,0)
+    model3display.SetOpacity(1)
+    model3display.SliceIntersectionVisibilityOn()
+    
+    model3display.SetScene(scene)
+    scene.AddNode(model3display)
+    model3.SetAndObserveDisplayNodeID(model3display.GetID())
+
+    # Add to scene
+    model3display.SetPolyData(cylinder.GetOutput())
+    
+    scene.AddNode(model3)
+    
+    
+    # Create probeTransform node
+    cylinderTransform = slicer.vtkMRMLLinearTransformNode()
+    cylinderTransform.SetName('Cylinder-%s' % entryPointFid.GetName())
+    
+    scene.AddNode(cylinderTransform)
+    
+    cylinderTransform.ApplyTransformMatrix(transform.GetMatrix())
+    
+    model3.SetAndObserveTransformNodeID(cylinderTransform.GetID())
+    
+    '''''
+    #Create a renderer, render window, and interactor
+    renderer = vtk.vtkRenderer()
+    renderWindow = vtk.vtkRenderWindow()
+    renderWindow.AddRenderer(renderer)
+    renderWindowInteractor = vtk.vtkRenderWindowInteractor()
+    renderWindowInteractor.SetRenderWindow(renderWindow)
+     
+    #Add the actor to the scene
+    renderer.AddActor(actor)
+    renderer.AddActor(sphereStart)
+    renderer.AddActor(sphereEnd)
+    renderer.SetBackground(.1, .2, .3) # Background color dark blue
+     
+     
+    #Render and interact
+    renderWindow.Render()
+    renderWindowInteractor.Start()
+    '''
 class drawAblationZoneSphere:
   
-  def __init__(self, fiducialListNode):
-    target = fiducialListNode
+  def __init__(self, targetFiducialListNode, volume):
+    target = targetFiducialListNode
     
     scene = slicer.mrmlScene
     
-    # Camera cursor
+    # Camera lesionModel
     sphere = vtk.vtkSphereSource()
-    sphere.SetRadius(30)
+    sphere.SetRadius(volume)
     sphere.Update()
 
     # Create model node
-    cursor = slicer.vtkMRMLModelNode()
-    cursor.SetScene(scene)
-    cursor.SetName("Cursor-%s" % target.GetName())
-    cursor.SetAndObservePolyData(sphere.GetOutput())
+    lesionModel = slicer.vtkMRMLModelNode()
+    lesionModel.SetScene(scene)
+    lesionModel.SetName("Ablationzone-%s" % target.GetName())
+    lesionModel.SetAndObservePolyData(sphere.GetOutput())
 
     # Create display node
-    cursorModelDisplay = slicer.vtkMRMLModelDisplayNode()
-    cursorModelDisplay.SetColor(0,0,128)
-    cursorModelDisplay.SetOpacity(0.4)
-    cursorModelDisplay.SetScene(scene)
-    scene.AddNode(cursorModelDisplay)
-    cursor.SetAndObserveDisplayNodeID(cursorModelDisplay.GetID())
+    lesionModelDisplay = slicer.vtkMRMLModelDisplayNode()
+    lesionModelDisplay.SetColor(200,0,0)
+    lesionModelDisplay.SetOpacity(0.4)
+    lesionModelDisplay.SliceIntersectionVisibilityOn()
+    
+    lesionModelDisplay.SetScene(scene)
+    scene.AddNode(lesionModelDisplay)
+    lesionModel.SetAndObserveDisplayNodeID(lesionModelDisplay.GetID())
 
     # Add to scene
-    cursorModelDisplay.SetPolyData(sphere.GetOutput())
+    lesionModelDisplay.SetPolyData(sphere.GetOutput())
     
-    scene.AddNode(cursor)
+    scene.AddNode(lesionModel)
     
-    # Create transform node
-    transform = slicer.vtkMRMLLinearTransformNode()
-    transform.SetName('Transform-%s' % target.GetName())
+    # Create ablationZoneTransform node
+    ablationZoneTransform = slicer.vtkMRMLLinearTransformNode()
+    ablationZoneTransform.SetName('Transform-%s' % target.GetName())
     
-    scene.AddNode(transform)
+    scene.AddNode(ablationZoneTransform)
     
     # Translation
     transformMatrix = vtk.vtkMatrix4x4()
@@ -299,12 +549,18 @@ class drawAblationZoneSphere:
     transformMatrix.SetElement(1, 3, currentFiducialCoordinatesRAS[1])
     transformMatrix.SetElement(2, 3, currentFiducialCoordinatesRAS[2])
     
-    transform.ApplyTransformMatrix(transformMatrix)
+    ablationZoneTransform.ApplyTransformMatrix(transformMatrix)
+    
+    lesionModel.SetAndObserveTransformNodeID(ablationZoneTransform.GetID())
+    
+    self.ablationZoneTransform = ablationZoneTransform
+    
+    
+    
 
-    cursor.SetAndObserveTransformNodeID(transform.GetID())
-    
-    # needs to be set to center, otherwise the RAS vector will be duplicated
-    target.SetFiducialCoordinates(0, 0, 0)
-    target.SetAndObserveTransformNodeID(transform.GetID())
-    
-    self.transform = transform
+class device:
+  def __init__(self, name, diameter, length, volume):
+    self.name = name
+    self.diameter = diameter
+    self.length = length
+    self.volume = volume
