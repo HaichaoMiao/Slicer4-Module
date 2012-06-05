@@ -1,6 +1,7 @@
 from __main__ import vtk, qt, ctk, slicer
 import xml.dom.minidom
 import random
+from math import sqrt, pow, asin, sin, acos, cos
 
 # when moving the sphere, the 2d does not update
 # placement of a ROI around of the tumor
@@ -274,63 +275,42 @@ class drawProbe:
     iren.Start() 
     '''
     
-    probeModel = slicer.vtkMRMLModelNode()
-    probeModel.SetScene(scene)
-    probeModel.SetName("Probe")
-    probeModel.SetAndObservePolyData(probe.GetOutput())
+     
+    #Create an cylinder.
+    cylinder = vtk.vtkCylinderSource()
+    cylinder.SetHeight(length)
+    cylinder.SetRadius(diameter / 2)
     
-    probeModelDisplay = slicer.vtkMRMLModelDisplayNode()
-    probeModelDisplay.SetColor(2, 2, 2)
-    probeModelDisplay.SliceIntersectionVisibilityOn()
-    probeModelDisplay.SetScene(scene)
-    scene.AddNode(probeModelDisplay)
-    probeModel.SetAndObserveDisplayNodeID(probeModelDisplay.GetID())
+    # test 2
+    pos = [0 for i in range(3)]
+    
+    # get coordinates from current entry point fiducial
+    currentEntryPointFiducialCoordinatesRAS = [0, 0, 0]
+    
+    entryPointFid.GetFiducialCoordinates(currentEntryPointFiducialCoordinatesRAS)
+    
+    currentTargetFiducialCoordinatesRAS = [0, 0, 0]
+    
+    targetFid.GetFiducialCoordinates(currentTargetFiducialCoordinatesRAS)
+    
+    for i in range(3):
+      pos[i] = currentTargetFiducialCoordinatesRAS[i] - currentEntryPointFiducialCoordinatesRAS[i]
+      
+    # cylinder.SetHeight(sqrt(pow(pos[0], 2) + pow(pos[1], 2) + pow(pos[2], 2)))
+    
+    translationTarget = [currentEntryPointFiducialCoordinatesRAS[0] + pos[0] / 2, currentEntryPointFiducialCoordinatesRAS[1] + pos[1] / 2, currentEntryPointFiducialCoordinatesRAS[2] + pos[2] / 2]
+    
 
-    probeModelDisplay.SetPolyData(probe.GetOutput())
-    
-    scene.AddNode(probeModel)
-    
-    # Create probeTransform node
-    probeTransform = slicer.vtkMRMLLinearTransformNode()
-    probeTransform.SetName('Transform-%s' % entryPointFid.GetName())
-    
-    scene.AddNode(probeTransform)
-    
-    # Translation
-    transformMatrix = vtk.vtkMatrix4x4()
-    
-    # get coordinates from current fiducial
-    currentFiducialCoordinatesRAS = [0, 0, 0]
-    
-    entryPointFid.GetFiducialCoordinates(currentFiducialCoordinatesRAS)
-    
-    transformMatrix.SetElement(0, 3, currentFiducialCoordinatesRAS[0])
-    transformMatrix.SetElement(1, 3, currentFiducialCoordinatesRAS[1])
-    transformMatrix.SetElement(2, 3, currentFiducialCoordinatesRAS[2])
-    
-    probeTransform.ApplyTransformMatrix(transformMatrix)
-    
-    probeModel.SetAndObserveTransformNodeID(probeTransform.GetID())
-    
-    # test 
-    
-    USER_MATRIX = False
-    
-    #Create an arrow.
-    cylinder = vtk.vtkArrowSource()
-    # cylinder.SetHeight(3)
-    # cylinder.SetRadius(2)
-    
     # Generate a random start and end point
     random.seed(8775070)
     startPoint = [0 for i in range(3)]
-    startPoint[0] = random.uniform(-10,10)
-    startPoint[1] = random.uniform(-10,10)
-    startPoint[2] = random.uniform(-10,10)
+    startPoint[0] = currentEntryPointFiducialCoordinatesRAS[0]
+    startPoint[1] = currentEntryPointFiducialCoordinatesRAS[1]
+    startPoint[2] = currentEntryPointFiducialCoordinatesRAS[2]
     endPoint = [0 for i in range(3)]
-    endPoint[0] = random.uniform(-10,10)
-    endPoint[1] = random.uniform(-10,10)
-    endPoint[2] = random.uniform(-10,10)
+    endPoint[0] = currentTargetFiducialCoordinatesRAS[0]
+    endPoint[1] = currentTargetFiducialCoordinatesRAS[1]
+    endPoint[2] = currentTargetFiducialCoordinatesRAS[2]
      
     # Compute a basis
     normalizedX = [0 for i in range(3)]
@@ -340,8 +320,9 @@ class drawProbe:
     # The X axis is a vector from start to end
     math = vtk.vtkMath()
     math.Subtract(endPoint, startPoint, normalizedX)
-    length = math.Norm(normalizedX)
+    # length = math.Norm(normalizedX)
     math.Normalize(normalizedX)
+     
      
     # The Z axis is an arbitrary vector cross X
     arbitrary = [0 for i in range(3)]
@@ -364,88 +345,11 @@ class drawProbe:
      
     # Apply the transforms
     transform = vtk.vtkTransform()
-    transform.Translate(startPoint)
+    transform.Translate(translationTarget)
     transform.Concatenate(matrix)
-    transform.Scale(length, length, length)
-     
-    # Transform the polydata
-    transformPD = vtk.vtkTransformPolyDataFilter()
-    transformPD.SetTransform(transform)
-    transformPD.SetInputConnection(cylinder.GetOutputPort())
-     
-    #Create a mapper and actor for the arrow
-    mapper = vtk.vtkPolyDataMapper()
-    actor = vtk.vtkActor()
-     
-    if USER_MATRIX:
-        mapper.SetInputConnection(cylinder.GetOutputPort())
-        actor.SetUserMatrix(transform.GetMatrix())
-    else:
-        mapper.SetInputConnection(transformPD.GetOutputPort())
-     
-    actor.SetMapper(mapper)
-     
-    # Create spheres for start and end point
-    sphereStartSource = vtk.vtkSphereSource()
-    sphereStartSource.SetCenter(startPoint)
-    sphereStartMapper = vtk.vtkPolyDataMapper()
-    sphereStartMapper.SetInputConnection(sphereStartSource.GetOutputPort())
-    sphereStart = vtk.vtkActor()
-    sphereStart.SetMapper(sphereStartMapper)
-    sphereStart.GetProperty().SetColor(1.0, 1.0, .3)
-     
-    sphereEndSource = vtk.vtkSphereSource()
-    sphereEndSource.SetCenter(endPoint)
-    sphereEndMapper = vtk.vtkPolyDataMapper()
-    sphereEndMapper.SetInputConnection(sphereEndSource.GetOutputPort())
-    sphereEnd = vtk.vtkActor()
-    sphereEnd.SetMapper(sphereEndMapper)
-    sphereEnd.GetProperty().SetColor(1.0, .3, .3)
+    transform.RotateZ(90)
     
     
-    # Create model node
-    model1 = slicer.vtkMRMLModelNode()
-    model1.SetScene(scene)
-    model1.SetName("model1-%s" % targetFid.GetName())
-    model1.SetAndObservePolyData(sphereStartSource.GetOutput())
-
-    # Create display node
-    model1display = slicer.vtkMRMLModelDisplayNode()
-    model1display.SetColor(0,100,0)
-    model1display.SetOpacity(1)
-    model1display.SliceIntersectionVisibilityOn()
-    
-    model1display.SetScene(scene)
-    scene.AddNode(model1display)
-    model1.SetAndObserveDisplayNodeID(model1display.GetID())
-
-    # Add to scene
-    model1display.SetPolyData(sphereStartSource.GetOutput())
-    
-    scene.AddNode(model1)
-    
-    model2 = slicer.vtkMRMLModelNode()
-    
-    # Create model node
-    model2 = slicer.vtkMRMLModelNode()
-    model2.SetScene(scene)
-    model2.SetName("model2-%s" % targetFid.GetName())
-    model2.SetAndObservePolyData(sphereEndSource.GetOutput())
-
-    # Create display node
-    model2display = slicer.vtkMRMLModelDisplayNode()
-    model2display.SetColor(0,100,0)
-    model2display.SetOpacity(1)
-    model2display.SliceIntersectionVisibilityOn()
-    
-    model2display.SetScene(scene)
-    scene.AddNode(model2display)
-    model2.SetAndObserveDisplayNodeID(model2display.GetID())
-
-    # Add to scene
-    model2display.SetPolyData(sphereEndSource.GetOutput())
-    
-    scene.AddNode(model2)
     
     # Create model node
     model3 = slicer.vtkMRMLModelNode()
@@ -455,7 +359,7 @@ class drawProbe:
 
     # Create display node
     model3display = slicer.vtkMRMLModelDisplayNode()
-    model3display.SetColor(0,100,0)
+    model3display.SetColor(100,0,0)
     model3display.SetOpacity(1)
     model3display.SliceIntersectionVisibilityOn()
     
@@ -471,7 +375,7 @@ class drawProbe:
     
     # Create probeTransform node
     cylinderTransform = slicer.vtkMRMLLinearTransformNode()
-    cylinderTransform.SetName('Cylinder-%s' % entryPointFid.GetName())
+    cylinderTransform.SetName('Arrow-%s' % entryPointFid.GetName())
     
     scene.AddNode(cylinderTransform)
     
@@ -479,25 +383,8 @@ class drawProbe:
     
     model3.SetAndObserveTransformNodeID(cylinderTransform.GetID())
     
-    '''''
-    #Create a renderer, render window, and interactor
-    renderer = vtk.vtkRenderer()
-    renderWindow = vtk.vtkRenderWindow()
-    renderWindow.AddRenderer(renderer)
-    renderWindowInteractor = vtk.vtkRenderWindowInteractor()
-    renderWindowInteractor.SetRenderWindow(renderWindow)
-     
-    #Add the actor to the scene
-    renderer.AddActor(actor)
-    renderer.AddActor(sphereStart)
-    renderer.AddActor(sphereEnd)
-    renderer.SetBackground(.1, .2, .3) # Background color dark blue
-     
-     
-    #Render and interact
-    renderWindow.Render()
-    renderWindowInteractor.Start()
-    '''
+
+    
 class drawAblationZoneSphere:
   
   def __init__(self, targetFiducialListNode, volume):
@@ -554,8 +441,6 @@ class drawAblationZoneSphere:
     lesionModel.SetAndObserveTransformNodeID(ablationZoneTransform.GetID())
     
     self.ablationZoneTransform = ablationZoneTransform
-    
-    
     
 
 class device:
