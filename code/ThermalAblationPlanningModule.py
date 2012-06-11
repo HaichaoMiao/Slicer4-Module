@@ -1,36 +1,35 @@
 from __main__ import vtk, qt, ctk, slicer
 import xml.dom.minidom
 import random
-from math import sqrt, pow, asin, sin, acos, cos
+from math import sqrt, pow
 
-# placement of a ROI around of the tumor
-# labeling of probes in the 3D View
-# ablation zones are always spheres?
+# placement of a ROI around of the tumor necessary?
+# shapes of ablationzone?
 # label maps?
 # relative paths depends on the slicer app, not the module
+# is the GUI sufficient?
 
 # ThermalAblationPlanningModule
 #
 
-# only test data
 document = """\
 <devices>
-    <Device>
+    <device>
         <name>Galil ICE Seed</name>
         <diameter>5</diameter>
         <length>150</length>
         <ablationzone_shape>
             <volume>15</volume>
         </ablationzone_shape>
-    </Device>
-    <Device>
+    </device>
+    <device>
         <name>Galil ICE Rod</name>
         <diameter>8</diameter>
         <length>120</length>
         <ablationzone_shape>
             <volume>20</volume>
         </ablationzone_shape>
-    </Device>
+    </device>
 </devices>
 """
 
@@ -39,7 +38,7 @@ class ThermalAblationPlanningModule:
   def __init__(self, parent):
       
     parent.title = "Thermal Ablation Planning"
-    parent.categories = ["Ablation"]
+    parent.categories = ["Tumor Ablation"]
     parent.dependencies = []
     parent.contributors = ["Haichao Miao <hmiao87@gmail.com>"]
     parent.helpText = """
@@ -47,8 +46,7 @@ class ThermalAblationPlanningModule:
     For more information, read the README file.
     """
     parent.acknowledgementText = """
-    This module was created by Haichao Miao as a part of his bachelor thesis under the guidance of Dr. Wolfgang Schramm 
-    at the Vienna University of Technology.
+    This module was created by Haichao Miao as a part of his bachelor thesis at the Vienna University of Technology. 
     """
     self.parent = parent
     
@@ -69,7 +67,6 @@ class ThermalAblationPlanningModuleWidget:
       self.parent = parent
       
     self.layout = self.parent.layout()
-    self.transform = None
     
     if not parent:
       self.setup()
@@ -77,10 +74,10 @@ class ThermalAblationPlanningModuleWidget:
 
       self.parent.show()
       
-    
+  
+  # setup the Widgets  
   def setup(self):
     
-
     #
     # Probe Placement Planning Collapsible button
     #
@@ -162,10 +159,8 @@ class ThermalAblationPlanningModuleWidget:
     self.devicesComboBox = devicesComboBox
     
     deviceSelectionLayout.addRow("Select Device: ", devicesComboBox)
-    
-    # self.devicesComboBox.connect('currentIndexChanged(int)', self.onDeviceComboBoxChanged)
-    
-    # Probe Placement
+        
+    # 2: Probe Placement
     
     probePlacementGroupBox = qt.QGroupBox()
     probePlacementGroupBox.setTitle("2: Probe Placement")
@@ -240,7 +235,7 @@ class ThermalAblationPlanningModuleWidget:
     
     self.devices = []
     
-    for num, elem in enumerate(dom.getElementsByTagName("Device")):
+    for num, elem in enumerate(dom.getElementsByTagName("device")):
       for node in elem.getElementsByTagName("name"):
           name = node.childNodes[0].nodeValue
       for node in elem.getElementsByTagName("diameter"):
@@ -274,7 +269,7 @@ class ThermalAblationPlanningModuleWidget:
     self.probeCnt = self.probeCnt + 1
     
     # alternating colors for the probes
-    self.probeColor = [[50, 50, 0], [50, 0, 50], [0, 50, 50], [0, 0, 50], [0, 50, 0]]
+    self.probeColor = [[1, 0.2, 0], [0, 0.2, 0.9], [0.1, 1, 0.1], [0.5, 0.3, 0.9], [1, 0.9, 0]]
     
     probeText = 'Probe ' + str(self.probeCnt)
       
@@ -282,12 +277,13 @@ class ThermalAblationPlanningModuleWidget:
     
     drawProbe(self.entryPointFiducialsNodeSelector.currentNode(), self.targetFiducialsNodeSelector.currentNode(), self.devices[self.devicesComboBox.currentIndex].length, self.devices[self.devicesComboBox.currentIndex].diameter, probeText, self.probeColor[self.probeCnt%5])
     
-    self.insertionSphere.deleteInsertionSphere()
+    
     
   def onDrawAblationZoneButtonClicked(self):
       
-      AblationZoneSphere(self.targetFiducialsNodeSelector.currentNode(), self.devices[self.devicesComboBox.currentIndex].volume) 
-
+    AblationZoneSphere(self.targetFiducialsNodeSelector.currentNode(), self.devices[self.devicesComboBox.currentIndex].volume) 
+    self.insertionSphere.disableInsertionSphere()
+    
 class drawProbe:
     
   def __init__(self, entryPointFiducialListNode, targetFiducialListNode, length, diameter, probeText, probeColor):
@@ -411,73 +407,6 @@ class drawProbe:
     probeModel.SetAndObserveTransformNodeID(probeTransform.GetID())
     
     
-    '''
-    # Create the axes and the associated mapper and actor.   
-    axes = vtk.vtkAxes()   
-    axes.SetOrigin(0, 0, 0)   
-    axesMapper = vtk.vtkPolyDataMapper()   
-    axesMapper.SetInputConnection(axes.GetOutputPort())   
-    axesActor = vtk.vtkActor()   
-    axesActor.SetMapper(axesMapper)   
-       
-    # Create the 3D text and the associated mapper and follower (a type of   
-    # actor).  Position the text so it is displayed over the origin of the   
-    # axes.   
-    atext = vtk.vtkVectorText()   
-    atext.SetText("Origin")   
-    textMapper = vtk.vtkPolyDataMapper()   
-    textMapper.SetInputConnection(atext.GetOutputPort())   
-    textActor = vtk.vtkFollower()   
-    textActor.SetMapper(textMapper)   
-    textActor.SetScale(0.2, 0.2, 0.2)   
-    textActor.AddPosition(0, -0.1, 0)   
-       
-    
-    # Create the Renderer, RenderWindow, and RenderWindowInteractor.   
-    ren = vtk.vtkRenderer()   
-    renWin = vtk.vtkRenderWindow()   
-    renWin.AddRenderer(ren)   
-    iren = vtk.vtkRenderWindowInteractor()   
-    iren.SetRenderWindow(renWin)   
-       
-    # Add the actors to the renderer.   
-    ren.AddActor(axesActor)   
-    ren.AddActor(textActor)   
-       
-    # Zoom in closer.   
-    ren.ResetCamera()   
-    ren.GetActiveCamera().Zoom(1.6)   
-       
-    # Reset the clipping range of the camera; set the camera of the   
-    # follower; render.   
-    ren.ResetCameraClippingRange()   
-    textActor.SetCamera(ren.GetActiveCamera())   
-       
-    iren.Initialize()   
-    renWin.Render()   
-    iren.Start() 
-    
-    
-    # Labeling the Probe
-    
-    probeLabelModel = slicer.vtkMRMLModelNode()
-    probeLabelModel.SetScene(scene)
-    probeLabelModel.SetName(probeText + 'Label')
-    probeLabelModel.SetAndObservePolyData(atext.GetOutput())
-    
-    probeLabelModelDisplay = slicer.vtkMRMLModelDisplayNode()
-    probeLabelModelDisplay.SetScene(scene)
-    
-    scene.AddNode(probeLabelModelDisplay)
-    
-    probeLabelModel.SetAndObserveDisplayNodeID(probeLabelModelDisplay.GetID())
-    
-    probeLabelModelDisplay.SetPolyData(atext.GetOutput())
-    
-    scene.AddNode(probeLabelModel)
-    
-    '''
-    
 class AblationZoneSphere:
   
   def __init__(self, targetFiducialListNode, volume):
@@ -498,7 +427,7 @@ class AblationZoneSphere:
 
     # Create display node
     lesionModelDisplay = slicer.vtkMRMLModelDisplayNode()
-    lesionModelDisplay.SetColor(100,0,0)
+    lesionModelDisplay.SetColor(1,0.5,0)
     lesionModelDisplay.SetOpacity(0.4)
     lesionModelDisplay.SliceIntersectionVisibilityOn()
     
@@ -517,7 +446,8 @@ class AblationZoneSphere:
     
     scene.AddNode(ablationZoneTransform)
     
-    # Translation
+    # the 4x4-matrix is needed later for the rotation of the different ablation shapes
+    # 
     transformMatrix = vtk.vtkMatrix4x4()
     
     # get coordinates from current fiducial
@@ -556,7 +486,7 @@ class InsertionSphere:
 
     # Create display node
     insertionRadiusModelDisplay = slicer.vtkMRMLModelDisplayNode()
-    insertionRadiusModelDisplay.SetColor(10,10,10)
+    insertionRadiusModelDisplay.SetColor(0.8,0.8,0.8)
     insertionRadiusModelDisplay.SetOpacity(0.3)
     insertionRadiusModelDisplay.SliceIntersectionVisibilityOn()
     
@@ -596,10 +526,13 @@ class InsertionSphere:
     self.insertionRadiusModelDisplay = insertionRadiusModelDisplay
     self.insertionRadiusTransform = insertionRadiusTransform
   
-  def deleteInsertionSphere(self):
+  def disableInsertionSphere(self):
+    scene = slicer.mrmlScene
     self.insertionRadiusModelDisplay.VisibilityOff()
     self.insertionRadiusModelDisplay.SliceIntersectionVisibilityOff()
     
+    self.insertionSphere.insertionRadiusModel.UpdateScene(scene)
+    self.insertionSphere.insertionRadiusModelDisplay.UpdateScene(scene)
     
 class Device:
   def __init__(self, name, diameter, length, volume):
