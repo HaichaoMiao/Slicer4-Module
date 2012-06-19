@@ -1,13 +1,22 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <devices>
-	<device>
-		<name>Galil Ice Seed</name>
-		<diameter>1.5</diameter>
-		<length>13</length>
-		<ablationzone_shape>
-			<volume>
-				30
-			</volume>
-		</ablationzone_shape>
-	</device>
+    <device>
+        <name>UMC-I</name>
+        <diameter>5</diameter>
+        <length>150</length>
+        <ablationzone>
+            <shape>sphere</shape>
+            <shapeRadius>15</shapeRadius>
+        </ablationzone>
+    </device>
+    <device>
+        <name>Microtaze</name>
+        <diameter>8</diameter>
+        <length>120</length>
+        <ablationzone>
+            <shape>cylinder</shape>
+            <shapeRadius>20</shapeRadius>
+            <shapeHeight>40</shapeHeight>
+        </ablationzone>
+    </device>
 </devices>

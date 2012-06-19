@@ -14,15 +14,18 @@
    				<xsd:element name="name" type="xsd:string" />
    				<xsd:element name="diameter" type="xsd:double" />
    				<xsd:element name="length" type="xsd:double" />
-   				<xsd:element ref="ablationzone_shape" />
+   				<xsd:element name="ablationzone" type="ablationzoneShape"/>
    			</xsd:sequence>
    		</xsd:complexType>
    </xsd:element>
    
-   <xsd:element name="ablationzone_shape">
+   <xsd:element name="ablationzoneShape">
    		<xsd:complexType>
    			<xsd:sequence>
-   				<xsd:element name="volume" type="xsd:double" />
+   					<xsd:element name="shape" type="xsd:string"/>
+   					<xsd:element name="shapeRadius" type="xsd:double" minOccurs="0"/>
+   					<xsd:element name="shapeHeight" type="xsd:double" minOccurs="0"/>
+   					<xsd:element name="shapeVolume" type="xsd:double" minOccurs="0"/>
    			</xsd:sequence>
    		</xsd:complexType>
    </xsd:element>

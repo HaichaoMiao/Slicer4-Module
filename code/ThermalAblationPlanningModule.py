@@ -1,34 +1,45 @@
 from __main__ import vtk, qt, ctk, slicer
 import xml.dom.minidom
 import random
+import string
 from math import sqrt, pow
 
-# placement of a ROI around of the tumor necessary?
-# shapes of ablationzone?
-# label maps?
-# relative paths depends on the slicer app, not the module
-# is the GUI sufficient?
+
+# todo: shapes of the ablation zone
 
 # ThermalAblationPlanningModule
 #
 
-document = """\
+standardDevicesXml = """
 <devices>
     <device>
         <name>Galil ICE Seed</name>
         <diameter>5</diameter>
         <length>150</length>
-        <ablationzone_shape>
-            <volume>15</volume>
-        </ablationzone_shape>
+        <ablationzone>
+            <shape>sphere</shape>
+            <shapeRadius>15</shapeRadius>
+        </ablationzone>
     </device>
     <device>
         <name>Galil ICE Rod</name>
         <diameter>8</diameter>
         <length>120</length>
-        <ablationzone_shape>
-            <volume>20</volume>
-        </ablationzone_shape>
+        <ablationzone>
+            <shape>cylinder</shape>
+            <shapeRadius>20</shapeRadius>
+            <shapeHeight>40</shapeHeight>
+        </ablationzone>
+    </device>
+    <device>
+        <name>TestEllipsoid</name>
+        <diameter>4</diameter>
+        <length>190</length>
+        <ablationzone>
+            <shape>sphere</shape>
+            <shapeHeight>40</shapeHeight>
+            <shapeVolume>240</shapeVolume>
+        </ablationzone>
     </device>
 </devices>
 """
@@ -42,8 +53,9 @@ class ThermalAblationPlanningModule:
     parent.dependencies = []
     parent.contributors = ["Haichao Miao <hmiao87@gmail.com>"]
     parent.helpText = """
-    Slicer 4 module for planning a thermal ablation procedure.
-    For more information, read the README file.
+    Slicer module for planning a thermal ablation procedure.
+    For more information, read the README 
+.
     """
     parent.acknowledgementText = """
     This module was created by Haichao Miao as a part of his bachelor thesis at the Vienna University of Technology. 
@@ -58,7 +70,6 @@ class ThermalAblationPlanningModuleWidget:
 
   def __init__(self, parent = None):
       
-    
     if not parent:
       self.parent = slicer.qMRMLWidget()
       self.parent.setLayout(qt.QVBoxLayout())
@@ -68,12 +79,13 @@ class ThermalAblationPlanningModuleWidget:
       
     self.layout = self.parent.layout()
     
+    self.parseDevices()
+    
     if not parent:
       self.setup()
       self.entryPointFiducialsNodeSelector.setMRMLScene(slicer.mrmlScene)
 
       self.parent.show()
-      
   
   # setup the Widgets  
   def setup(self):
@@ -82,61 +94,35 @@ class ThermalAblationPlanningModuleWidget:
     # Probe Placement Planning Collapsible button
     #
     
+    self.probeColors = [[1, 0.2, 0], [0, 0.2, 0.9], [0.1, 1, 0.1], [0.5, 0.3, 0.9], [1, 0.9, 0]]
+    self.ablationZoneColor = [1,0.5,0]
+    self.ablationZones = []
+    self.ablationZonesCheckBoxes = []
+    
+    self.sameFiducialErrorMessage = qt.QErrorMessage()
+    
     probePlacementPlanningCollapsibleButton = ctk.ctkCollapsibleButton()
     probePlacementPlanningCollapsibleButton.text = "Probe Placement Planning"
     self.layout.addWidget(probePlacementPlanningCollapsibleButton)
     
     formLayout = qt.QFormLayout(probePlacementPlanningCollapsibleButton)
 
-
-    # 0: Insertion Radius
+    # 0: Load Devices XML
+    fileSelectorGroupBox = qt.QGroupBox()
+    fileSelectorGroupBox.setTitle("0: Load Devices XML")
+    self.fileSelectorGroupBox = fileSelectorGroupBox
     
-    insertionRadiusGroupBox = qt.QGroupBox()
-    insertionRadiusGroupBox.setTitle("0: Placement of ROI")
-    self.insertionRadiusGroupBox = insertionRadiusGroupBox
+    formLayout.addWidget(fileSelectorGroupBox)
     
-    formLayout.addWidget(insertionRadiusGroupBox)
+    fileSelectorLayout = qt.QFormLayout(fileSelectorGroupBox)
     
-    insertionRadiusLayout = qt.QGridLayout(insertionRadiusGroupBox)
+    selectDevicesFileButton = qt.QPushButton()
+    selectDevicesFileButton.setText("Load Devices XML")
+    self.selectDevicesFileButton = selectDevicesFileButton
     
-    radiusHorizontalSlider = qt.QSlider()
-    radiusHorizontalSlider.setOrientation(1)
-    radiusHorizontalSlider.setMaximum(300)
-    radiusHorizontalSlider.setValue(100)
-    radiusHorizontalSlider.setPageStep(1)
+    self.selectDevicesFileButton.connect('clicked(bool)', self.onSelectDevicesFileButtonClicked)
     
-    self.radiusHorizontalSlider = radiusHorizontalSlider
-    
-    
-    self.radiusHorizontalSlider.connect('valueChanged(int)', self.sliderValueChanged)
-    insertionRadiusLabel = qt.QLabel()
-    insertionRadiusLabel.setText(radiusHorizontalSlider.value)
-    
-    self.insertionRadiusLabel = insertionRadiusLabel
-    
-    self.targetTumorFiducialsNodeSelector = slicer.qMRMLNodeComboBox()
-    self.targetTumorFiducialsNodeSelector.objectName = "targetTumorFiducialsNodeSelector"
-    self.targetTumorFiducialsNodeSelector.nodeTypes = ['vtkMRMLAnnotationFiducialNode']
-    self.targetTumorFiducialsNodeSelector.baseName = "Target Tumor"
-    self.targetTumorFiducialsNodeSelector.noneEnabled = False
-    self.targetTumorFiducialsNodeSelector.addEnabled = False
-    self.targetTumorFiducialsNodeSelector.removeEnabled = False
-    
-    self.parent.connect('mrmlSceneChanged(vtkMRMLScene*)',
-                        self.targetTumorFiducialsNodeSelector, 'setMRMLScene(vtkMRMLScene*)')  
-    
-    addInsertionRadiusButton = qt.QPushButton("Add Insertion Radius")
-    addInsertionRadiusButton.toolTip = "Add Insertion Radius"
-    self.addInsertionRadiusButton = addInsertionRadiusButton
-    
-    insertionRadiusLayout.addWidget(radiusHorizontalSlider, 1, 1)
-    insertionRadiusLayout.addWidget(insertionRadiusLabel, 1, 2)
-    insertionRadiusLayout.addWidget(self.targetTumorFiducialsNodeSelector, 1, 3)
-    insertionRadiusLayout.addWidget(addInsertionRadiusButton, 1, 4)
-
-    addInsertionRadiusButton.connect('clicked(bool)', self.onAddInsertionRadiusButtonClicked)
-    
-    
+    fileSelectorLayout.addRow(selectDevicesFileButton)
     
     # 1: Device Selection
     
@@ -150,20 +136,56 @@ class ThermalAblationPlanningModuleWidget:
     
     devicesComboBox = qt.QComboBox()
 
-    self.parseDevices()
-    
     for device in self.devices:
       devicesComboBox.addItem(device.name)
       
       
     self.devicesComboBox = devicesComboBox
     
+    self.insertionRadius = self.devices[self.devicesComboBox.currentIndex].length
+    
+    self.devicesComboBox.connect('currentIndexChanged(int)', self.deviceSelected)
+    
     deviceSelectionLayout.addRow("Select Device: ", devicesComboBox)
-        
-    # 2: Probe Placement
+    
+    # 2: Insertion Radius
+    
+    insertionRadiusGroupBox = qt.QGroupBox()
+    insertionRadiusGroupBox.setTitle("2: Placement of ROI")
+    self.insertionRadiusGroupBox = insertionRadiusGroupBox
+    
+    formLayout.addWidget(insertionRadiusGroupBox)
+    
+    insertionRadiusLayout = qt.QGridLayout(insertionRadiusGroupBox)
+    
+    self.targetTumorFiducialsNodeSelector = slicer.qMRMLNodeComboBox()
+    self.targetTumorFiducialsNodeSelector.objectName = "targetTumorFiducialsNodeSelector"
+    self.targetTumorFiducialsNodeSelector.nodeTypes = ['vtkMRMLAnnotationFiducialNode']
+    self.targetTumorFiducialsNodeSelector.baseName = "Target Tumor"
+    self.targetTumorFiducialsNodeSelector.noneEnabled = False
+    self.targetTumorFiducialsNodeSelector.addEnabled = False
+    self.targetTumorFiducialsNodeSelector.removeEnabled = False
+    
+    self.parent.connect('mrmlSceneChanged(vtkMRMLScene*)',
+                        self.targetTumorFiducialsNodeSelector, 'setMRMLScene(vtkMRMLScene*)')  
+    
+    self.targetTumorFiducialsNodeSelector.connect('currentNodeChanged(vtkMRMLNode*)', self.targetTumorFiducialsNodeSelectorChanged)
+    
+    addInsertionRadiusButton = qt.QPushButton("Add Insertion Radius")
+    addInsertionRadiusButton.toolTip = "Add Insertion Radius"
+    self.addInsertionRadiusButton = addInsertionRadiusButton
+    
+    # insertionRadiusLayout.addWidget(radiusHorizontalSlider, 1, 1)
+    # insertionRadiusLayout.addWidget(insertionRadiusLabel, 1, 2)
+    insertionRadiusLayout.addWidget(self.targetTumorFiducialsNodeSelector, 1, 3)
+    insertionRadiusLayout.addWidget(addInsertionRadiusButton, 1, 4)
+
+    addInsertionRadiusButton.connect('clicked(bool)', self.onAddInsertionRadiusButtonClicked)
+
+    # 3: Probe Placement
     
     probePlacementGroupBox = qt.QGroupBox()
-    probePlacementGroupBox.setTitle("2: Probe Placement")
+    probePlacementGroupBox.setTitle("3: Probe Placement")
     self.probePlacementGroupBox = probePlacementGroupBox
     
     formLayout.addWidget(probePlacementGroupBox)
@@ -182,6 +204,8 @@ class ThermalAblationPlanningModuleWidget:
     self.parent.connect('mrmlSceneChanged(vtkMRMLScene*)',
                         self.entryPointFiducialsNodeSelector, 'setMRMLScene(vtkMRMLScene*)')     
     
+    self.entryPointFiducialsNodeSelector.connect('currentNodeChanged(vtkMRMLNode*)', self.entryPointFiducialsNodeSelectorChanged)
+
     self.targetFiducialsNodeSelector = slicer.qMRMLNodeComboBox()
     self.targetFiducialsNodeSelector.objectName = "targetFiducialsNodeSelector"
     self.targetFiducialsNodeSelector.nodeTypes = ['vtkMRMLAnnotationFiducialNode']
@@ -193,6 +217,8 @@ class ThermalAblationPlanningModuleWidget:
     probePlacementLayout.addRow("Target Point:", self.targetFiducialsNodeSelector)
     self.parent.connect('mrmlSceneChanged(vtkMRMLScene*)',
                         self.targetFiducialsNodeSelector, 'setMRMLScene(vtkMRMLScene*)')   
+
+    self.targetFiducialsNodeSelector.connect('currentNodeChanged(vtkMRMLNode*)', self.targetFiducialsNodeSelectorChanged)
     
     placeProbeButton = qt.QPushButton("Place Probe")
     placeProbeButton.toolTip = "Place Probe"
@@ -207,14 +233,13 @@ class ThermalAblationPlanningModuleWidget:
     self.probeNameLineEdit.text = 'Probe ' + str(self.probeCnt)
     
     probePlacementLayout.addRow(self.probeNameLineEdit, placeProbeButton)
-    self.parent.connect('mrmlSceneChanged(vtkMRMLScene*)',
-                        self.probeNameLineEdit, 'setMRMLScene(vtkMRMLScene*)')  
     
+    self.probePlacementLayout = probePlacementLayout
     
-    # 3: Draw Ablation Zone
+    # 4: Draw Ablation Zone
 
     drawAblationZoneGroupBox = qt.QGroupBox()
-    drawAblationZoneGroupBox.setTitle("3: Draw Ablation Zone")
+    drawAblationZoneGroupBox.setTitle("4: Draw Ablation Zone")
     self.drawAblationZoneGroupBox = drawAblationZoneGroupBox
     
     formLayout.addWidget(drawAblationZoneGroupBox)
@@ -229,61 +254,179 @@ class ThermalAblationPlanningModuleWidget:
     
     drawAblationZoneLayout.addRow(drawAblationZoneButton)
     
+    # Ablation Zones
+    
+    ablationZonesGroupBox = qt.QGroupBox()
+    ablationZonesGroupBox.setTitle("Ablation Zones")
+    self.ablationZonesGroupBox = ablationZonesGroupBox
+    formLayout.addWidget(ablationZonesGroupBox)
+
+    ablationZonesLayout = qt.QFormLayout(ablationZonesGroupBox)
+    
+    self.ablationZonesLayout = ablationZonesLayout
+    
+    '''
+    # Ablation Zones (checkableNodeComboBox)
+    # checkedNodes() doesn't work in python
+    
+    ablationZonesGroupBox = qt.QGroupBox()
+    ablationZonesGroupBox.setTitle("Ablation Zones")
+    self.ablationZonesGroupBox = ablationZonesGroupBox
+    formLayout.addWidget(ablationZonesGroupBox)
+
+    ablationZonesLayout = qt.QFormLayout(ablationZonesGroupBox)
+    
+    self.ablationZonesLayout = ablationZonesLayout
+    
+    modelNodesComboBox = slicer.qMRMLCheckableNodeComboBox()
+    modelNodesComboBox.objectName = "displayNodeSelector"
+    modelNodesComboBox.nodeTypes = ['vtkMRMLModelNode']
+    modelNodesComboBox.baseName = "Display Nodes"
+    modelNodesComboBox.noneEnabled = False
+    modelNodesComboBox.addEnabled = False
+    modelNodesComboBox.removeEnabled = False
+    self.modelNodesComboBox = modelNodesComboBox
+    
+    self.parent.connect('mrmlSceneChanged(vtkMRMLScene*)',
+                        self.modelNodesComboBox, 'setMRMLScene(vtkMRMLScene*)')  
+    
+    
+    self.ablationZonesLayout.addRow("Display Nodes:", self.modelNodesComboBox)
+    
+    setModelsVisibleButton = qt.QPushButton("Set Models Visible")
+    setModelsVisibleButton.toolTip = "set selected models visible"
+    setModelsVisibleButton.connect('clicked(bool)', self.onSetModelsVisibleButtonClicked)
+    self.setModelsVisibleButton = setModelsVisibleButton
+    
+    setModelsInvisibleButton = qt.QPushButton("Set Models Invisible")
+    setModelsInvisibleButton.toolTip = "set selected models invisible"
+    setModelsInvisibleButton.connect('clicked(bool)', self.onSetModelsInvisibleButtonClicked)
+    self.setModelsInvisibleButton = setModelsInvisibleButton
+    
+    
+    self.ablationZonesLayout.addWidget(self.setModelsVisibleButton)
+    self.ablationZonesLayout.addWidget(self.setModelsInvisibleButton)
+    
+    '''
+    '''
+    ablationZonesView = slicer.qMRMLTreeView()
+    ablationZonesView.setSceneModelType('vtkMRMLModelHierarchyNode')
+    
+    
+    self.parent.connect('mrmlSceneChanged(vtkMRMLScene*)',
+                        ablationZonesView, 'setMRMLScene(vtkMRMLScene*)')  
+    
+    self.ablationZonesLayout.addRow("Display Nodes:", ablationZonesView) 
+    '''
+    
   def parseDevices(self):
     
-    dom = xml.dom.minidom.parseString(document)
+    dom = xml.dom.minidom.parseString(standardDevicesXml)
     
     self.devices = []
     
+    self.parseDom(dom)  
+       
+  def parseDevicesFile(self, file):
+    
+    dom = xml.dom.minidom.parse(file)
+    
+    self.devices = []
+    
+    self.parseDom(dom)  
+    
+    self.devicesComboBox.clear()
+    
+    for device in self.devices:
+      self.devicesComboBox.addItem(device.name)
+  
+  def parseDom(self, dom):
+    
     for num, elem in enumerate(dom.getElementsByTagName("device")):
+      shapeRadius = 0
+      shapeHeight = 0
+      shapeVolume = 0
       for node in elem.getElementsByTagName("name"):
           name = node.childNodes[0].nodeValue
       for node in elem.getElementsByTagName("diameter"):
           diameter = node.childNodes[0].nodeValue
       for node in elem.getElementsByTagName("length"):
           length = node.childNodes[0].nodeValue
-      for node in elem.getElementsByTagName("volume"):
-          volume = node.childNodes[0].nodeValue
-      
-      self.devices.append(Device(name, int(diameter), int(length), int(volume)))
+      for node in elem.getElementsByTagName("shape"):
+          shape = node.childNodes[0].nodeValue
+      for node in elem.getElementsByTagName("shapeRadius"):
+          shapeRadius = node.childNodes[0].nodeValue
+      for node in elem.getElementsByTagName("shapeHeight"):
+          shapeHeight = node.childNodes[0].nodeValue
+      for node in elem.getElementsByTagName("shapeVolume"):
+          shapeVolume = node.childNodes[0].nodeValue
+          
+      self.devices.append(Device(name, int(diameter), int(length), shape, int(shapeRadius), int(shapeHeight), int(shapeVolume)))
+
+  def targetTumorFiducialsNodeSelectorChanged(self):
+    print "targetTumorFiducialsNodeSelectorChanged"
   
+  def entryPointFiducialsNodeSelectorChanged(self):
+    self.probePlacementGroupBox.setStyleSheet("QGroupBox {} ")
+  
+  def targetFiducialsNodeSelectorChanged(self):
+    self.probePlacementGroupBox.setStyleSheet("QGroupBox {} ")
+      
+  def onSelectDevicesFileButtonClicked(self):
+    
+    fileDialog = qt.QFileDialog()
+    
+    self.fileDialog = fileDialog
+    
+    if fileDialog.exec_() == 1:
+      path = fileDialog.selectedFiles()[0]
+    
+    file = open(path)
+    
+    self.layout.addWidget(fileDialog)
+    
+    self.parseDevicesFile(file)
   
   def onAddInsertionRadiusButtonClicked(self):
     
-    self.insertionSphere = InsertionSphere(self.targetTumorFiducialsNodeSelector.currentNode(), self.radiusHorizontalSlider.value)
-    
-    
-  def sliderValueChanged(self):
-    scene = slicer.mrmlScene
-    self.insertionRadiusLabel.setText(self.radiusHorizontalSlider.value)
-    self.insertionSphere.sphere.SetRadius(self.radiusHorizontalSlider.value)
-    self.insertionSphere.sphere.Update
-    self.insertionSphere.insertionRadiusModel.UpdateScene(scene)
-    self.insertionSphere.insertionRadiusModelDisplay.UpdateScene(scene)
-    
-    
-    
+    self.insertionSphere = InsertionSphere(self.targetTumorFiducialsNodeSelector.currentNode(), self.insertionRadius)
+  
+  def deviceSelected(self):
+    self.insertionRadius = self.devices[self.devicesComboBox.currentIndex].length
+      
   def onPlaceProbeButtonClicked(self):
     
-    
-    self.probeCnt = self.probeCnt + 1
-    
-    # alternating colors for the probes
-    self.probeColor = [[1, 0.2, 0], [0, 0.2, 0.9], [0.1, 1, 0.1], [0.5, 0.3, 0.9], [1, 0.9, 0]]
-    
-    probeText = 'Probe ' + str(self.probeCnt)
-      
-    self.probeNameLineEdit.setText(probeText)
-    
-    drawProbe(self.entryPointFiducialsNodeSelector.currentNode(), self.targetFiducialsNodeSelector.currentNode(), self.devices[self.devicesComboBox.currentIndex].length, self.devices[self.devicesComboBox.currentIndex].diameter, probeText, self.probeColor[self.probeCnt%5])
-    
-    
+    if (self.entryPointFiducialsNodeSelector.currentNode() is self.targetFiducialsNodeSelector.currentNode()):
+      self.sameFiducialErrorMessage.showMessage("Target Point must be different from Entry Point.")
+      self.probePlacementGroupBox.setStyleSheet("QGroupBox {border: 2px solid red;} ")
+    else:  
+      self.probeCnt = self.probeCnt + 1
+      probeText = 'Probe ' + str(self.probeCnt)
+      self.probeNameLineEdit.setText(probeText)
+      drawProbe(self.entryPointFiducialsNodeSelector.currentNode(), self.targetFiducialsNodeSelector.currentNode(), self.devices[self.devicesComboBox.currentIndex].length, self.devices[self.devicesComboBox.currentIndex].diameter, probeText, self.probeColors[self.probeCnt%5])
+      self.probePlacementGroupBox.setStyleSheet("QGroupBox {} ")
     
   def onDrawAblationZoneButtonClicked(self):
-      
-    AblationZoneSphere(self.targetFiducialsNodeSelector.currentNode(), self.devices[self.devicesComboBox.currentIndex].volume) 
-    self.insertionSphere.disableInsertionSphere()
     
+    if (self.entryPointFiducialsNodeSelector.currentNode() is self.targetFiducialsNodeSelector.currentNode()):
+      self.sameFiducialErrorMessage.showMessage("Target Point must be different from Entry Point.")
+    else:
+      self.ablationZones.append(AblationZone(self.entryPointFiducialsNodeSelector.currentNode(), self.targetFiducialsNodeSelector.currentNode(), self.devices[self.devicesComboBox.currentIndex].shape, self.devices[self.devicesComboBox.currentIndex].shapeRadius, self.devices[self.devicesComboBox.currentIndex].shapeHeight, self.devices[self.devicesComboBox.currentIndex].shapeVolume, self.ablationZoneColor))
+      curAblationZoneCheckBox = qt.QCheckBox(self.ablationZones[-1].lesionModel.GetName())
+      curAblationZoneCheckBox.setCheckState(2)
+      curAblationZoneCheckBox.setStyleSheet("QCheckBox {background-color: orange;} ")
+      curAblationZoneCheckBox.connect('stateChanged(int)', self.ablationZonesCheckBoxesStateChanged)
+      
+      self.ablationZonesLayout.addWidget(curAblationZoneCheckBox)
+      self.ablationZonesCheckBoxes.append(curAblationZoneCheckBox)
+      
+  def ablationZonesCheckBoxesStateChanged(self):
+    for i in range(len(self.ablationZonesCheckBoxes)):
+     if self.ablationZonesCheckBoxes[i].checkState() == 0:
+       self.ablationZones[i].setAblationZoneInvisible()
+     if self.ablationZonesCheckBoxes[i].checkState() == 2:
+       self.ablationZones[i].setAblationZoneVisible()  
+        
 class drawProbe:
     
   def __init__(self, entryPointFiducialListNode, targetFiducialListNode, length, diameter, probeText, probeColor):
@@ -292,9 +435,6 @@ class drawProbe:
     targetFid = targetFiducialListNode
     scene = slicer.mrmlScene
     
-    
-    
-     
     #Create an probe.
     probe = vtk.vtkCylinderSource()
     probe.SetHeight(length)
@@ -407,27 +547,103 @@ class drawProbe:
     probeModel.SetAndObserveTransformNodeID(probeTransform.GetID())
     
     
-class AblationZoneSphere:
+class AblationZone:
   
-  def __init__(self, targetFiducialListNode, volume):
-    target = targetFiducialListNode
+  def __init__(self, entryPointFiducialListNode, targetFiducialListNode, shape, shapeRadius, shapeHeight, shapeVolume, ablationZoneColor):
+    
+    entryPointFid = entryPointFiducialListNode
+    targetFid = targetFiducialListNode
     
     scene = slicer.mrmlScene
     
-    # Camera lesionModel
-    sphere = vtk.vtkSphereSource()
-    sphere.SetRadius(volume)
-    sphere.Update()
+    
+    if (shape == 'sphere'):
+      source = vtk.vtkSphereSource()
+      source.SetRadius(shapeRadius)
+      source.Update()
+    elif (shape == 'cylinder'):
+      source = vtk.vtkCylinderSource()
+      source.SetRadius(shapeRadius)
+      source.SetHeight(shapeHeight)
+      source.Update()
+    elif (shape == 'ellipsoid'):
+      source = vtk.vtkSphereSource()
+      source.SetRadius(shapeRadius)
+      source.Update()
+    else:
+      source = vtk.vtkSphereSource()
+      source.SetRadius(shapeRadius)
+      source.Update()
+    
+    
+    # get coordinates from current entry point fiducial
+    currentEntryPointFiducialCoordinatesRAS = [0, 0, 0]
+    
+    entryPointFid.GetFiducialCoordinates(currentEntryPointFiducialCoordinatesRAS)
+    
+    currentTargetFiducialCoordinatesRAS = [0, 0, 0]
+    
+    targetFid.GetFiducialCoordinates(currentTargetFiducialCoordinatesRAS)
+    
+    translationTarget = [currentTargetFiducialCoordinatesRAS[0], currentTargetFiducialCoordinatesRAS[1], currentTargetFiducialCoordinatesRAS[2]]
 
+    # Generate a random start and end point
+    random.seed(8775070)
+    startPoint = [0 for i in range(3)]
+    startPoint[0] = currentEntryPointFiducialCoordinatesRAS[0]
+    startPoint[1] = currentEntryPointFiducialCoordinatesRAS[1]
+    startPoint[2] = currentEntryPointFiducialCoordinatesRAS[2]
+    endPoint = [0 for i in range(3)]
+    endPoint[0] = currentTargetFiducialCoordinatesRAS[0]
+    endPoint[1] = currentTargetFiducialCoordinatesRAS[1]
+    endPoint[2] = currentTargetFiducialCoordinatesRAS[2]
+     
+    # Compute a basis
+    normalizedX = [0 for i in range(3)]
+    normalizedY = [0 for i in range(3)]
+    normalizedZ = [0 for i in range(3)]
+     
+    # The X axis is a vector from start to end
+    math = vtk.vtkMath()
+    math.Subtract(endPoint, startPoint, normalizedX)
+    # length = math.Norm(normalizedX)
+    math.Normalize(normalizedX)
+    
+    # The Z axis is an arbitrary vector cross X
+    arbitrary = [0 for i in range(3)]
+    arbitrary[0] = random.uniform(-10,10)
+    arbitrary[1] = random.uniform(-10,10)
+    arbitrary[2] = random.uniform(-10,10)
+    math.Cross(normalizedX, arbitrary, normalizedZ)
+    math.Normalize(normalizedZ)
+    
+    # The Y axis is Z cross X
+    math.Cross(normalizedZ, normalizedX, normalizedY)
+    matrix = vtk.vtkMatrix4x4()
+     
+    # Create the direction cosine matrix
+    matrix.Identity()
+    for i in range(3):
+      matrix.SetElement(i, 0, normalizedX[i])
+      matrix.SetElement(i, 1, normalizedY[i])
+      matrix.SetElement(i, 2, normalizedZ[i])
+      matrix.SetElement(i, 3, currentTargetFiducialCoordinatesRAS[i])
+      
+    # Apply the transforms
+    transform = vtk.vtkTransform()
+    transform.Concatenate(matrix)
+    transform.RotateZ(90)
+    
+        
     # Create model node
     lesionModel = slicer.vtkMRMLModelNode()
     lesionModel.SetScene(scene)
-    lesionModel.SetName("Ablationzone-%s" % target.GetName())
-    lesionModel.SetAndObservePolyData(sphere.GetOutput())
-
+    lesionModel.SetName("Ablationzone-%s" % targetFid.GetName())
+    lesionModel.SetAndObservePolyData(source.GetOutput())
+    self.lesionModel = lesionModel
     # Create display node
     lesionModelDisplay = slicer.vtkMRMLModelDisplayNode()
-    lesionModelDisplay.SetColor(1,0.5,0)
+    lesionModelDisplay.SetColor(ablationZoneColor)
     lesionModelDisplay.SetOpacity(0.4)
     lesionModelDisplay.SliceIntersectionVisibilityOn()
     
@@ -435,37 +651,43 @@ class AblationZoneSphere:
     scene.AddNode(lesionModelDisplay)
     lesionModel.SetAndObserveDisplayNodeID(lesionModelDisplay.GetID())
 
+    
     # Add to scene
-    lesionModelDisplay.SetPolyData(sphere.GetOutput())
+    lesionModelDisplay.SetPolyData(source.GetOutput())
+    self.lesionModelDisplay = lesionModelDisplay
+    self.lesionModel= lesionModel
     
     scene.AddNode(lesionModel)
     
     # Create ablationZoneTransform node
     ablationZoneTransform = slicer.vtkMRMLLinearTransformNode()
-    ablationZoneTransform.SetName('AblationZoneTransform-%s' % target.GetName())
+    ablationZoneTransform.SetName('AblationZoneTransform-%s' % targetFid.GetName())
     
     scene.AddNode(ablationZoneTransform)
     
-    # the 4x4-matrix is needed later for the rotation of the different ablation shapes
-    # 
-    transformMatrix = vtk.vtkMatrix4x4()
-    
-    # get coordinates from current fiducial
-    currentFiducialCoordinatesRAS = [0, 0, 0]
-    
-    target.GetFiducialCoordinates(currentFiducialCoordinatesRAS)
-    
-    transformMatrix.SetElement(0, 3, currentFiducialCoordinatesRAS[0])
-    transformMatrix.SetElement(1, 3, currentFiducialCoordinatesRAS[1])
-    transformMatrix.SetElement(2, 3, currentFiducialCoordinatesRAS[2])
-    
-    ablationZoneTransform.ApplyTransformMatrix(transformMatrix)
+    ablationZoneTransform.ApplyTransformMatrix(transform.GetMatrix())
     
     lesionModel.SetAndObserveTransformNodeID(ablationZoneTransform.GetID())
     
     self.ablationZoneTransform = ablationZoneTransform
     
-
+  def setAblationZoneInvisible(self):
+    scene = slicer.mrmlScene
+    self.lesionModelDisplay.VisibilityOff()
+    self.lesionModelDisplay.SliceIntersectionVisibilityOff()
+    
+    # self.lesionModel.UpdateScene(scene)
+    self.lesionModelDisplay.UpdateScene(scene)
+  
+  def setAblationZoneVisible(self):
+    scene = slicer.mrmlScene
+    self.lesionModelDisplay.VisibilityOn()
+    self.lesionModelDisplay.SliceIntersectionVisibilityOn()
+    
+    # self.lesionModel.UpdateScene(scene)
+    self.lesionModelDisplay.UpdateScene(scene)    
+  
+  
 class InsertionSphere:
   
   def __init__(self, targetFiducialListNode, radius):
@@ -473,9 +695,11 @@ class InsertionSphere:
     
     scene = slicer.mrmlScene
     
-    # Camera lesionModel
+    
     sphere = vtk.vtkSphereSource()
     sphere.SetRadius(radius)
+    sphere.SetThetaResolution(20)
+    sphere.SetPhiResolution(20)
     sphere.Update()
 
     # Create model node
@@ -531,12 +755,15 @@ class InsertionSphere:
     self.insertionRadiusModelDisplay.VisibilityOff()
     self.insertionRadiusModelDisplay.SliceIntersectionVisibilityOff()
     
-    self.insertionSphere.insertionRadiusModel.UpdateScene(scene)
-    self.insertionSphere.insertionRadiusModelDisplay.UpdateScene(scene)
-    
 class Device:
-  def __init__(self, name, diameter, length, volume):
+  def __init__(self, name, diameter, length, shape, shapeRadius, shapeHeight, shapeVolume):
     self.name = name
     self.diameter = diameter
     self.length = length
-    self.volume = volume
+    self.shape = shape
+    self.shapeRadius = shapeRadius
+    self.shapeHeight = shapeHeight
+    self.shapeVolume = shapeVolume
+
+
+    
