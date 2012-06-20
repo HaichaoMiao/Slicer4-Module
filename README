@@ -1,3 +1,32 @@
-First Module in Slicer 4
+=====================================================================
+Name: 		Thermal Ablation Planning Module for Slicer 4
+Creator:	Haichao Miao
+Date:		20.06.2012
+Version:	b1.0
+Language:	Python
+Platforms:	Slicer 4 (Windows, Mac OS X, Linux)
+=====================================================================
 
-specifications are comming soon.
+This Module provides different tools for the planning phase of 
+a tumor ablation intervention. 
+
+I) Getting Started: 
+
+Download Slicer			http://download.slicer.org/
+
+II) Load the "Thermal Ablation Module" into Slicer
+
+	Slicer -> Edit -> Application Settings -> Modules -> 
+	Additional module paths ->
+	Add directory path of the file ThermalAblationPlanningModule.py
+	
+	Restart after adding the path
+	
+----------
+
+The main functionalities of this module are as follows:
+
+	1) 	todo
+
+
+----------

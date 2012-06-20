@@ -417,7 +417,7 @@ class ThermalAblationPlanningModuleWidget:
     if (self.entryPointFiducialsNodeSelector.currentNode() is self.targetFiducialsNodeSelector.currentNode()):
       self.sameFiducialErrorMessage.showMessage("Target Point must be different from Entry Point.")
       self.probePlacementGroupBox.setStyleSheet("QGroupBox {border: 2px solid red;} ")
-    else:  
+    else:
       self.probeCnt = self.probeCnt + 1
       probeText = 'Probe ' + str(self.probeCnt)
       self.probeNameLineEdit.setText(probeText)
