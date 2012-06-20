@@ -30,11 +30,12 @@ The main functionalities of this module are as follows:
 	2)	select target and entry points
 	3) 	place and orient multiple probes
 	4)	visualize the resulting ablation zones
-	5)	list ablation zones
-	6)	toggle visibility of ablation zones
-	7) 	select devices of different manufacturers with the respective
+	5)	different ablation zone shapes (currently sphere and cylinder)
+	6)	list ablation zones
+	7)	toggle visibility of ablation zones
+	8) 	select devices of different manufacturers with the respective
 		specifications
-	8)	define new devices and loading them into slicer
+	9)	define new devices and loading them into slicer
 
 
 ----------
