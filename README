@@ -26,7 +26,15 @@ II) Load the "Thermal Ablation Module" into Slicer
 
 The main functionalities of this module are as follows:
 
-	1) 	todo
+	1) 	add/delete an insertion radius around the tumor
+	2)	select target and entry points
+	3) 	place and orient multiple probes
+	4)	visualize the resulting ablation zones
+	5)	list ablation zones
+	6)	toggle visibility of ablation zones
+	7) 	select devices of different manufacturers with the respective
+		specifications
+	8)	define new devices and loading them into slicer
 
 
 ----------
