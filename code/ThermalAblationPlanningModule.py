@@ -122,7 +122,11 @@ class ThermalAblationPlanningModuleWidget:
     
     self.selectDevicesFileButton.connect('clicked(bool)', self.onSelectDevicesFileButtonClicked)
     
-    fileSelectorLayout.addRow(selectDevicesFileButton)
+    fileNameLabel = qt.QLabel("No file Selected.")
+    
+    self.fileNameLabel = fileNameLabel
+    
+    fileSelectorLayout.addRow(selectDevicesFileButton, self.fileNameLabel)
     
     # 1: Device Selection
     
@@ -174,13 +178,19 @@ class ThermalAblationPlanningModuleWidget:
     addInsertionRadiusButton = qt.QPushButton("Add Insertion Radius")
     addInsertionRadiusButton.toolTip = "Add Insertion Radius"
     self.addInsertionRadiusButton = addInsertionRadiusButton
-    
-    # insertionRadiusLayout.addWidget(radiusHorizontalSlider, 1, 1)
-    # insertionRadiusLayout.addWidget(insertionRadiusLabel, 1, 2)
-    insertionRadiusLayout.addWidget(self.targetTumorFiducialsNodeSelector, 1, 3)
-    insertionRadiusLayout.addWidget(addInsertionRadiusButton, 1, 4)
-
     addInsertionRadiusButton.connect('clicked(bool)', self.onAddInsertionRadiusButtonClicked)
+
+    
+    deleteInsertionRadiusButton = qt.QPushButton("Delete Insertion Radius")
+    deleteInsertionRadiusButton.toolTip = "Delete Insertion Radius"
+    self.deleteInsertionRadiusButton = deleteInsertionRadiusButton
+    self.deleteInsertionRadiusButton.connect('clicked(bool)', self.onDeleteInsertionRadiusButtonClicked)
+
+    
+    insertionRadiusLayout.addWidget(self.targetTumorFiducialsNodeSelector, 1, 1)
+    insertionRadiusLayout.addWidget(self.addInsertionRadiusButton, 1, 2)
+    insertionRadiusLayout.addWidget(self.deleteInsertionRadiusButton, 1, 3)
+    
 
     # 3: Probe Placement
     
@@ -386,11 +396,19 @@ class ThermalAblationPlanningModuleWidget:
     self.layout.addWidget(fileDialog)
     
     self.parseDevicesFile(file)
+    
+    self.fileNameLabel.setText(path)
   
   def onAddInsertionRadiusButtonClicked(self):
     
     self.insertionSphere = InsertionSphere(self.targetTumorFiducialsNodeSelector.currentNode(), self.insertionRadius)
   
+  def onDeleteInsertionRadiusButtonClicked(self):
+    scene = slicer.mrmlScene
+    self.insertionSphere.insertionRadiusModelDisplay.VisibilityOff()
+    self.insertionSphere.insertionRadiusModelDisplay.SliceIntersectionVisibilityOff()
+    # todo: delete models from scene
+    
   def deviceSelected(self):
     self.insertionRadius = self.devices[self.devicesComboBox.currentIndex].length
       
@@ -695,7 +713,6 @@ class InsertionSphere:
     
     scene = slicer.mrmlScene
     
-    
     sphere = vtk.vtkSphereSource()
     sphere.SetRadius(radius)
     sphere.SetThetaResolution(20)
@@ -705,7 +722,7 @@ class InsertionSphere:
     # Create model node
     insertionRadiusModel = slicer.vtkMRMLModelNode()
     insertionRadiusModel.SetScene(scene)
-    insertionRadiusModel.SetName("Ablationzone-%s" % target.GetName())
+    insertionRadiusModel.SetName("InsertionSphere-%s" % target.GetName())
     insertionRadiusModel.SetAndObservePolyData(sphere.GetOutput())
 
     # Create display node
