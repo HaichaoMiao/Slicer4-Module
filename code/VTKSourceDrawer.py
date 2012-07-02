@@ -1,3 +1,6 @@
+from __main__ import vtk, slicer
+from math import sqrt, pow
+
 class Probe:
     
   def __init__(self, entryPointFiducialListNode, targetFiducialListNode, length, diameter, probeText, probeColor):

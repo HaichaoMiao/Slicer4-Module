@@ -4,7 +4,6 @@ import random
 import string
 from Device import Device
 from VTKSourceDrawer import Probe, AblationZone, InsertionSphere
-from math import sqrt, pow
 
 
 # todo: shapes of the ablation zone
@@ -278,60 +277,6 @@ class ThermalAblationPlanningModuleWidget:
     
     self.ablationZonesLayout = ablationZonesLayout
     
-    '''
-    # Ablation Zones (checkableNodeComboBox)
-    # checkedNodes() doesn't work in python
-    
-    ablationZonesGroupBox = qt.QGroupBox()
-    ablationZonesGroupBox.setTitle("Ablation Zones")
-    self.ablationZonesGroupBox = ablationZonesGroupBox
-    formLayout.addWidget(ablationZonesGroupBox)
-
-    ablationZonesLayout = qt.QFormLayout(ablationZonesGroupBox)
-    
-    self.ablationZonesLayout = ablationZonesLayout
-    
-    modelNodesComboBox = slicer.qMRMLCheckableNodeComboBox()
-    modelNodesComboBox.objectName = "displayNodeSelector"
-    modelNodesComboBox.nodeTypes = ['vtkMRMLModelNode']
-    modelNodesComboBox.baseName = "Display Nodes"
-    modelNodesComboBox.noneEnabled = False
-    modelNodesComboBox.addEnabled = False
-    modelNodesComboBox.removeEnabled = False
-    self.modelNodesComboBox = modelNodesComboBox
-    
-    self.parent.connect('mrmlSceneChanged(vtkMRMLScene*)',
-                        self.modelNodesComboBox, 'setMRMLScene(vtkMRMLScene*)')  
-    
-    
-    self.ablationZonesLayout.addRow("Display Nodes:", self.modelNodesComboBox)
-    
-    setModelsVisibleButton = qt.QPushButton("Set Models Visible")
-    setModelsVisibleButton.toolTip = "set selected models visible"
-    setModelsVisibleButton.connect('clicked(bool)', self.onSetModelsVisibleButtonClicked)
-    self.setModelsVisibleButton = setModelsVisibleButton
-    
-    setModelsInvisibleButton = qt.QPushButton("Set Models Invisible")
-    setModelsInvisibleButton.toolTip = "set selected models invisible"
-    setModelsInvisibleButton.connect('clicked(bool)', self.onSetModelsInvisibleButtonClicked)
-    self.setModelsInvisibleButton = setModelsInvisibleButton
-    
-    
-    self.ablationZonesLayout.addWidget(self.setModelsVisibleButton)
-    self.ablationZonesLayout.addWidget(self.setModelsInvisibleButton)
-    
-    '''
-    '''
-    ablationZonesView = slicer.qMRMLTreeView()
-    ablationZonesView.setSceneModelType('vtkMRMLModelHierarchyNode')
-    
-    
-    self.parent.connect('mrmlSceneChanged(vtkMRMLScene*)',
-                        ablationZonesView, 'setMRMLScene(vtkMRMLScene*)')  
-    
-    self.ablationZonesLayout.addRow("Display Nodes:", ablationZonesView) 
-    '''
-    
   def parseDevices(self):
     
     dom = xml.dom.minidom.parseString(standardDevicesXml)
@@ -377,7 +322,7 @@ class ThermalAblationPlanningModuleWidget:
       self.devices.append(Device(name, int(diameter), int(length), shape, int(shapeRadius), int(shapeHeight), int(shapeVolume)))
 
   def targetTumorFiducialsNodeSelectorChanged(self):
-    print "targetTumorFiducialsNodeSelectorChanged"
+    print ""
   
   def entryPointFiducialsNodeSelectorChanged(self):
     self.probePlacementGroupBox.setStyleSheet("QGroupBox {} ")

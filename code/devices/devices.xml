@@ -3,7 +3,7 @@
     <device>
         <name>UMC-I</name>
         <diameter>5</diameter>
-        <length>150</length>
+        <length>120</length>
         <ablationzone>
             <shape>sphere</shape>
             <shapeRadius>15</shapeRadius>
@@ -12,7 +12,7 @@
     <device>
         <name>Microtaze</name>
         <diameter>8</diameter>
-        <length>120</length>
+        <length>110</length>
         <ablationzone>
             <shape>cylinder</shape>
             <shapeRadius>20</shapeRadius>
