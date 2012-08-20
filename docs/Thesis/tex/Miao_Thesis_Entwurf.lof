@@ -1,6 +1,18 @@
 \addvspace {10\p@ }
-\contentsline {figure}{\numberline {1.1}{\ignorespaces Microtaze (Heiwa, Osaka, Japan) and needle electrodes, \cite {dodd-2000}}}{11}{figure.1.1}
-\contentsline {figure}{\numberline {1.2}{\ignorespaces "Multiple electrode insertion technique. Five guiding needles are inserted, then microwave energy is applied with one needle at a time." \cite {lu-mwa}}}{12}{figure.1.2}
+\contentsline {figure}{\numberline {1.1}{\ignorespaces Tumor ablation intervention under Ultrasound-guidance with CT scans of the patient before and after the ablation. Image taken from \cite {dodd-2000}}}{8}{figure.1.1}
+\contentsline {figure}{\numberline {1.2}{\ignorespaces The figures show the spherical thermal injuries done by the different RFA treatment strategies. Tumors less than 2cm can be treated with a single ablation, larger tumors in size need to be performed multiple times \cite {dodd-2000}. Images taken from \cite {dodd-2000}}}{11}{figure.1.2}
+\contentsline {figure}{\numberline {1.3}{\ignorespaces The picture shows the ellipsoidal ice ball formation around the probe tip (Galil Medical, Yorkneam, Israel). Picture taken from \cite {silverman-cryo}.}}{12}{figure.1.3}
+\contentsline {figure}{\numberline {1.4}{\ignorespaces Microtaze (Heiwa, Osaka, Japan) and needle electrodes. Taken from \cite {dodd-2000}}}{14}{figure.1.4}
+\contentsline {figure}{\numberline {1.5}{\ignorespaces "Multiple electrode insertion technique. Five guiding needles are inserted, then microwave energy is applied with one needle at a time." Taken from \cite {lu-mwa}}}{15}{figure.1.5}
+\contentsline {figure}{\numberline {1.6}{\ignorespaces Dornier MediLas 5100 laser system. Picture taken from \cite {img-litt2}}}{15}{figure.1.6}
+\contentsline {figure}{\numberline {1.7}{\ignorespaces The MediLas 5100 flexible applicator. Picture taken from \cite {img-litt1}}}{16}{figure.1.7}
+\contentsline {figure}{\numberline {1.8}{\ignorespaces Schematic of HIFU treatment. Ultrasound is bundled in a focal point, where it results in heating. Image taken from \cite {img-hifu}}}{16}{figure.1.8}
+\addvspace {10\p@ }
+\contentsline {figure}{\numberline {2.1}{\ignorespaces Requirements on the platform specified as user stories.}}{21}{figure.2.1}
+\addvspace {10\p@ }
+\contentsline {figure}{\numberline {3.1}{\ignorespaces The Thermal Ablation module in Slicer 3D.}}{26}{figure.3.1}
+\contentsline {figure}{\numberline {3.2}{\ignorespaces Workflow description of the steps that needs to be carried out to plan the intervention.}}{30}{figure.3.2}
+\contentsline {figure}{\numberline {3.3}{\ignorespaces 3D Visualization of the abdominal structure. The Simulation of the insertion of Galil CryoHit 17g MRI S needles and two spherical ablation zones. }}{31}{figure.3.3}
 \addvspace {10\p@ }
 \addvspace {10\p@ }
 \addvspace {10\p@ }

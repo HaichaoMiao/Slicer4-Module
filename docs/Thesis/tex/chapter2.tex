@@ -1,17 +1,44 @@
 % heat sink effect
 \chapter{Requirement Analysis}
+
 \section{Introduction}
 
-Thermal Ablation Techniques are gaining popularity as a complementary choice of therapy for different tumors. Although it is commonly considered a safe and low-risk technique, it still suffers from a noticeable rate of complications. A review showed that complication rate of RFA for liver tumors are higher than previously assumed \cite{mulier-rfa}. RFA treatments still has higher tumor recurrence rate than surgical resection. The treatment outcome of an intervention is highly influenced by different factors:
-\begin{itemize}
-\item The placement of the applicator(s) is by far the most time-consuming part of the process. Tumors larger in size or multiple small tumors require repeated applicator placement and ablation.
-However the accurate placement is essential for the efficient treatment. 
-\item The imaging modalities for the guidance of the applicator placement and monitoring the developing ablation zone. Ultrasound is the most frequently used modality, but it is inadequate for imaging the ablation zone accurately \cite{diss-schramm} 
-\item Larger tumors require lager ablation zones, but this is accompanied by loss of control with an increased rate of damage to healthy tissue. 
-\item Large vessels adjacent to the tumor are more difficult to ablate completely since the blood flow acts like a heat sink (see heat sink effect).
-\item Since Thermal Ablation Techniques are technology-based treatments, the outcome is highly dependent on the wide variation of probe devices, imaging modalities and experience of the operator with these technologies. 
-\end{itemize}
+A platform that is targeted to plan the thermal ablation procedure needs to fulfill a minimum set of features. The finished application should help the operator to plan the intervention. But besides the basic functional requirements there is also the non-functional features. As in all software projects, these are as important as functional features. Especially when it is used in clinical practice, it has to meet usability and formal requirements. All organizational and formal requirements would go beyond the scope of this thesis and therefore will not be examined in detail. 
 
-The accurate estimation of the ablation zone and treatment result is essential for the success of the intervention. Due to the fact that the above mentioned factors has great influence on the outcome of a Thermal Ablation intervention, the thesis focusses on developing a treatment planning system. This system estimates the ablation zone based on the patient-specific anatomy using 3D visualization and virtually place applicators. \\
+Dr. Wolfgang Schramm has reviewed the requirements on such a system in his PhD thesis and therefore the planning software is mostly based on the requirement analysis did by him. He discussed in his PhD thesis the problem between accurate forecast of the treatment outcome and usability. He describes the use of FEA (Finite Element Analysis), that simulates the treatment outcome of thermal ablation, but the additional medical benefit is still not studied \cite{diss-schramm}. Furthermore the detailed simulation requires high computing power, which leads to a very time-consuming process. That makes distinct forecast not feasible to perform during or immediately before the intervention \cite{diss-schramm}. 
 
-Dr. Wolfgang Schramm has reviewed the requirements on such a system in his phd-thesis and therefore the planning software is mostly based on the requirement analysis did by him. 
+\section{Functional Requirements}
+
+\subsection{Image Analysis, Image Processing and Visualization}
+
+Thermal ablation is a image-guided therapy and therefore imaging plays a main role in the application. Given that the simulation is based on the patient specific data, the application has to load the  data in order to simulate the intervention adequately. Since DICOM (Digital Imaging and Communication in Medicine) is an open standard, that is implemented by nearly all manufacturer of medical imaging devices, the application must load at least DICOM volumes. For further using, the DICOM volume has most likely to be post-processed. The physician needs to perform simple image processing algorithms to image registration and segmentation for high quality treatment planning \cite{diss-schramm}. 
+
+The visualization of the structures is essential to view and interpret the outcome of the treatment. Due to this fact, visualization makes a major part of the functionality of the application. Not only the segmented structures, but also the 3D model of the applicator and the virtual resulting ablation zone has to be visualized. 
+
+\subsection{Treatment Simulation}
+
+The main function of the tool is to make an adequate forecast of the treatment outcome. Since the resulting ablation zone is highly depend on the used devices, it is necessary to use 3D models of the real devices for the simulation. Thus one of the main requirements is to make sure that the operator can use the 3D model devices with the same properties as the real ones. 
+
+The actual ablation outcome is very hard to forecast due to the perfusion mediated temperature change during the ablation \cite{diss-schramm}. As mentioned in the introduction of this chapter, FEA can be used to simulate the outcome accurately, however this time-consuming technique is not feasible for clinical practice. Instead, the application must be able to visualize the ablation zone based on the estimated values for the coagulation zone dimensions from the respective vendor or from literature \cite{diss-schramm}. Depending on the ablation technique the shape of the ablation zone must also considered for more accurate estimation. Using this approach regarding the estimation of the resulting ablation zone might not be as accurate as the FEA approach, but this is considered accurate enough to provide valuable information in the planning phase \cite{diss-schramm}. 
+
+Ablation techniques like CA uses multiple applicators which results in overlapping ablation zones. This must also be considered during the planning phase. The application must be able to place multiple probes and ablation zones. Afterwards, the visibility of the single ablation zones must be controllable for the operator.
+Additionally the operator must be able to select the exact entry points on the skin and the targeted points within the tumor. 
+
+After placing the probes and drawing the ablation zones, the operator must be provided with visual feedback. Because of preceding segmentation he now can see e.g. if a bone structure lies within the trajectory path or if large vessels lie within the ablation zone.
+
+\section{Non-functional Requirements} 
+
+The planning platform could either be used in clinical or research environment. In both scopes it must fulfill some formal requirements. By Austrian law, software is declared as medical product and therefore it must fulfill all regulations and can only be used in a clinical environment when they are CE (Conformité Européenne) certified. These certification processes are associated with additional quality assurance requirements and development costs. Since this application is a prototype, the application will disregard these requirements and the non-functional requirements limit to usability. 
+
+\section{Conclusion}
+
+For creating a planning platform, that considers the patient specific anatomy, it has to take the requirements described in this chapter into account. Considering these requirements the platform has to support several technologies. Instead to develop a standalone application, the software framework Slicer 3D was chosen as the basic application. Using Slicer avoids many unnecessary work, since it already implemented the basic requirements and further it allows to integrate own functionality. 
+
+Those requirements that has to implemented as a module for Slicer are specified as user stories (see figure \ref{fig:userstories}).
+
+\begin{figure}[htb]
+\centering
+\includegraphics[width = 120mm]{images/userstories.pdf}
+\caption{Requirements on the platform specified as user stories.}
+\label{fig:userstories}
+\end{figure}

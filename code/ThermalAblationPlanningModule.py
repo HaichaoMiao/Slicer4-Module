@@ -15,33 +15,73 @@ from VTKSourceDrawer import Probe, AblationZone, InsertionSphere
 standardDevicesXml = """
 <devices>
     <device>
-        <name>Galil ICE Seed</name>
-        <diameter>5</diameter>
-        <length>150</length>
+        <name>Galil CryoHit 17g MRI S needle</name>
+        <diameter>2</diameter>
+        <length>175</length>
         <ablationzone>
             <shape>sphere</shape>
-            <shapeRadius>15</shapeRadius>
+            <shapeRadius>14</shapeRadius>
         </ablationzone>
     </device>
     <device>
-        <name>Galil ICE Rod</name>
-        <diameter>8</diameter>
-        <length>120</length>
+        <name>Galil CryoHit 17g MRI I needle</name>
+        <diameter>2</diameter>
+        <length>175</length>
+        <ablationzone>
+            <shape>cylinder</shape>
+            <shapeRadius>14</shapeRadius>
+            <shapeHeight>34</shapeHeight>
+        </ablationzone>
+    </device>
+    <device>
+        <name>Galil CryoHit 2mm probe</name>
+        <diameter>3</diameter>
+        <length>180</length>
         <ablationzone>
             <shape>cylinder</shape>
             <shapeRadius>20</shapeRadius>
+            <shapeHeight>35</shapeHeight>
+        </ablationzone>
+    </device>
+    <device>
+        <name>Galil CryoHit 3mm probe</name>
+        <diameter>4</diameter>
+        <length>180</length>
+        <ablationzone>
+            <shape>cylinder</shape>
+            <shapeRadius>19</shapeRadius>
+            <shapeHeight>50</shapeHeight>
+        </ablationzone>
+    </device>
+    <device>
+        <name>Microtaze AZM-520 Deep percutaneous monopolar electrode (60W, 60sec)</name>
+        <diameter>2</diameter>
+        <length>150</length>
+        <ablationzone>
+            <shape>cylinder</shape>
+            <shapeRadius>18</shapeRadius>
             <shapeHeight>40</shapeHeight>
         </ablationzone>
     </device>
     <device>
-        <name>TestEllipsoid</name>
-        <diameter>4</diameter>
-        <length>190</length>
+        <name>Microtaze AZM-520 Deep percutaneous monopolar electrode (60W, 60sec)</name>
+        <diameter>2</diameter>
+        <length>150</length>
+        <ablationzone>
+            <shape>cylinder</shape>
+            <shapeRadius>18</shapeRadius>
+            <shapeHeight>40</shapeHeight>
+        </ablationzone>
+    </device>
+    <device>
+        <name>LeVeen Needle Electrode (200W RF Generator)</name>
+        <diameter>2</diameter>
+        <length>150</length>
         <ablationzone>
             <shape>sphere</shape>
-            <shapeHeight>40</shapeHeight>
-            <shapeVolume>240</shapeVolume>
+            <shapeRadius>50</shapeRadius>
         </ablationzone>
+    </device>
     </device>
 </devices>
 """
@@ -392,8 +432,3 @@ class ThermalAblationPlanningModuleWidget:
        self.ablationZones[i].setAblationZoneInvisible()
      if self.ablationZonesCheckBoxes[i].checkState() == 2:
        self.ablationZones[i].setAblationZoneVisible()  
-        
-
-
-
-    

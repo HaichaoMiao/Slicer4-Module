@@ -5,17 +5,39 @@
 \usepackage{url}
 \usepackage[pdftex]{hyperref}
 \usepackage{cite}
+\usepackage[applemac]{inputenc}
+\usepackage[
+nonumberlist, %keine Seitenzahlen anzeigen
+acronym,      %ein Abkürzungsverzeichnis erstellen
+toc,          %Einträge im Inhaltsverzeichnis
+section]      %im Inhaltsverzeichnis auf section-Ebene erscheinen
+{glossaries}
+
+\makeglossaries
+
+\newacronym{rf}{RF}{Radiofrequency}
+\newacronym{rfa}{RFA}{Radiofrequency Ablation}
+\newacronym{ca}{CA}{Cryoablation}
+\newacronym{hcc}{HCC}{Hepatocellular Carcinoma}
+\newacronym{dicom}{DICOM}{Digital Imaging and Communication in Medicine}
+\newacronym{mrml}{MRML}{Medical Reality Markup Language}
+\newacronym{us}{US}{Ultrasound}
+\newacronym{mri}{MRI}{Magnetic Resonance Imaging}
+\newacronym{ct}{CT}{Computed Tomography}
+\newacronym{mw}{MW}{Microwave}
+\newacronym{mwa}{MWA}{Microwave Ablation}
+\newacronym{fea}{FEA}{Finite Element Analysis}
+\newacronym{litt}{LITT}{Laster-induced Thermotherapy}
+\newacronym{hifu}{HIFU}{High-intensity focused ultrasound}
+\newacronym{itk}{ITK}{The Insight Segmentation and Registration Toolkit}
+\newacronym{vtk}{VTK}{The Visualization Toolkit}
+
 \begin{document}
 
 \include{frontmatter}
-\noindent
-\emph{Optional: Put your favorite quote here}
-\begin{flushright}
-Optional: Author of quote
-\end{flushright}
 % *************** Table of contents ***************
 \pagenumbering{roman}
-\pagestyle{headings}
+\pagestyle{plain}
 \tableofcontents
 
 % *************** End of front matter ***************
@@ -25,18 +47,35 @@ Optional: Author of quote
 \pagenumbering{arabic}
 
 \chapter*{Abstract}
-Thermal ablation as a treatment for tumors has been established continuously over the past years. It offers a complementary treatment to eliminate or shrink tumors in a minimal invasive way with significant lower risk of major complications. Medical imaging device has become indispensable for accomplishing thermal ablation. The first chapter of this thesis gives an overview of image-guided ablation techniques including radiofrequency (RFA), cryotherapy and microwave. \\
 
-Since thermal ablation is a complex procedure and because of the collaboration of several specialists during the intervention, there is a need for a planning platform which supports the specialists in planning the ablation. Thereby the second chapter discusses the implementation of a thermal ablation software prototype which allows the collaborators to simulate and plan the ablation (RFA and cryotherapy) before the actual intervention on basis of the patient's specific anatomy. 
+\section*{Background and Goal}
+Thermal ablation as a complementary treatment for localized tumors has been proving oneself for the last years and is applied more and more frequently. Different techniques (e.g. Radiofrequency ablation, Cryoablation etc.) are used to destroy cancer tissue either by heating or freezing. The treatment is applied in a minimal-invasive manner in contrast to surgical resection. Medical imaging modalities, such as Magnetic resonance imaging, computed tomography and ultrasound are essential for this treatment form. 
+\\
+Although thermal ablation is particularly used for the treatment of small tumors worldwide, metastases still re-appear more frequently than in case of surgical resection. The successful treatment outcome depends on many factors. Despite of the additional removal of a 1cm margin around the tumor, metastases still re-occur oftentimes. Incomplete removal of the tumor is mostly the reason for this circumstance.
+\\ 
+The collaboration of different experts and techniques suggest, that the operators benefits from a software-platform for supporting the operators during the planning-phase. The software enables the abstract simulation of the intervention on basis of the patient specific anatomy. Multiple applicators can be placed into the virtual body and the resulting ablation zone will be visualized on basis of data of the respective device vendors. The operators are enabled to see which structures lie in the trajectory of the applicator and above all which anatomical structure are adjacent to the tumor. Large vessels adjacent to the tumor will most likely limit the dimension of the ablation zone caused by the blood flow. Those and other effects will be detected and avoided by applying the planning-software.
+
+\section*{Methods and Results}
+
+Before developing the prototype the processes of the thermal ablation intervention must be understood. Different ablation techniques are described in this thesis. Devices of different vendors were evaluated to determine the different ablation zone shapes. The requirements on such a planning-system base upon the research work of Dr. Wolfgang Schramm.
+\\
+The software was developed as a module-extension of the Slicer software framework. The modular structure of Slicer allows the extension of its own functionality by adding different module types.  In the process a Python scripted module was developed to implement the functionality of such a planning-software as a prototype. The resulting software is open source and free to access at https://github.com/HaichaoMiao/Slicer4-Module.
 
 \chapter*{Zusammenfassung}
-Hier die deutsche Zusammenfassung einfügen
 
+\section*{Hintergrund und Ziele}
 
-\chapter*{Acknowledgements}
-Your acknowledgements to...
+Thermische Ablation als eine komplementäre Behandlung für lokale Tumore hat sich seit Jahren bewährt und wird immer häufiger eingesetzt. Dabei werden unterschiedliche Techniken (wie Hochfrequenzablation, Kryoablation etc.) eingesetzt um das Krebsgewebe entweder durch Erhitzung oder Erfrierung zu zerstören. Die Behandlung erfolgt minimal-invasiv im Gegensatz zum chirurgischen Eingriff, wobei bildgebende Verfahren wie Magnetresonanztomographie, Computertomographie und Ultraschall unverzichtbar sind. 
+\\
+Obwohl thermische Ablation vor allem für die Behandlung von kleinere Tumoren immer häufiger eingesetzt wird, ist jedoch das Wiederauftreten von Metastasen häufiger als bei der chirurgischen Resektion. Der Erfolg von thermischer Ablation ist von vielen Faktoren abhängig. Trotz der zusätzlichen Entfernung eines 1cm Abstandes um den Tumor, kommt es häufig zu Wiederauftreten von Metastasen. Eine unvollständige Entfernung ist oft der Ursache dafür. 
+\\
+Die Multidisziplinarität dieser Behandlung erfordert den Einsatz mehrere Experten bzw. Techniken. Es ist daher naheliegend eine Software-Platform zu entwickeln, die die Operatoren vor allem während der Planungs-Phase unterstützt. Die Software ermöglicht abstrakte Simulation des Vorganges aufgrund der patientenspezifischen Anatomie. Mehrere Applikatoren können in den virtuellen Körper eingebracht und die resultieren Ablationszonen aufgrund der Angaben des Gerätherstellers visualisiert werden. Die Operatoren haben dadurch die Möglichkeit zu erkennen, welche Strukturen in der Einstichsbahn des Applikators liegen und vor allem welche anatomische Strukturen am Tumor anliegen. Insbesondere große Gefäße nahe am Tumor können das Ausmaß der Ablationszone beschränken, da diese die thermische Energie ableiten. Diese und andere Effekte können im voraus erkannt und vermieden werden mit der Planungssoftware. 
 
-% include chapters here
+\section*{Methoden und Ergebnisse}
+
+Für die Entwicklung des Prototyps musste zuerst der Vorgang der thermischen Ablation verstanden werden. Unterschiedliche Ablationstechniken wurden abgebildet und beschrieben. Geräte unterschiedlicher Hersteller wurden ausgewertet um die unterschiedlichen Formen der Ablationszone zu bestimmen. Die Anforderung an ein solches Planungssystems basiert insbesondere auf die Vorarbeiten von Dr. Wolfgang Schramm. 
+\\
+Die Software wurde als Modul-Erweiterung des Slicer Software-Frameworks realisiert. Der modulare Aufbau von Slicer erlaubt die Erweiterung seiner eigenen Funktionalität mit unterschiedlichen Modultypen. Dabei wurde ein "Python scripted" Modul entwickelt um die Funktionalität einer solchen Planungs-Software als Prototyp zu implementieren. Die fertige entwickelte Software ist open source und auf https://github.com/HaichaoMiao/Slicer4-Module frei zugänglich. 
 
 \include{introduction}
 
@@ -49,17 +88,24 @@ Your acknowledgements to...
 %\chapter{Outlook and Discussion}
 %TODO
 \chapter{Conclusio}
-Put your conclusions and outlooks here
-
+Over the past years, different thermal ablation techniques have been applied successfully to treat tumors. The treatment of malignant liver tumor, kidney tumor and many other localized tumor forms by using thermal energy sources has gained clinical acceptance. Although 
+tumor patients benefit from the thermal ablation interventions, the treatment itself is still limited by the maximum size of ablation zone, that can be achieved. Thermal ablation is not an alternative to surgical resection but a complementary treatment form. 
+\\
+Before the intervention starts, many decisions have to be made, which have great impact on the treatment outcome. Because of the multidiscipline nature of the treatment form, a planning phase may have major influence on the treatment. Many errors during the intervention, such as wrong applicator placement could do irreversible damage to the patient. The software supports the operators during the planning phase by visualizing the procedure and making an adequate forecast of the treatment outcome. This helps the collaborators to picture and understand the intervention as a whole and thus the prototype helps avoiding errors. 
+\\
+The prototype gives feedback whether the trajectories of the placed probes are applicable or not. Additionally the prototype gives feedback of the coverage of tumor by the ablation zone on basis of the respective vendor or literature. However the developed prototype is far from the actual application in the clinical practice as discussed before, but it makes another step towards the goal of supporting the thermal ablation intervention by software.
 
 \chapter{Terms and abbreviations}
-\include{glossary}
 
+%Abkürzungen ausgeben
+\glsaddall
+\printglossary[type=\acronymtype,style=long]
 
 % \appendix
 % include appendexes here
 
-\listoftables
+\include{appendix}
+
 \listoffigures
 
 \bibliographystyle{alpha}
