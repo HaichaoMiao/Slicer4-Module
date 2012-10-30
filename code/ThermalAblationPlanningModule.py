@@ -82,7 +82,6 @@ standardDevicesXml = """
             <shapeRadius>50</shapeRadius>
         </ablationzone>
     </device>
-    </device>
 </devices>
 """
 
